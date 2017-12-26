@@ -1,4 +1,4 @@
-## Install
+## How to install
 
     go get -u github.com/weaming/telehello
 
