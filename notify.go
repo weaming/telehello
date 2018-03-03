@@ -6,71 +6,66 @@ import (
 	"time"
 )
 
-var myChatID = "142664361"
 var TelegramNotificationBox = make(chan Boxer, 1000)
-var MeRecipient Receiver = &Myself{ID: myChatID}
+var ChatsMap map[string]ChatUser
 
-type Receiver interface {
-	telebot.Recipient
-	UpdateID(string)
+type ChatUser struct {
+	TeleName string
+	ID       string
+	sync.RWMutex
 }
 
-type Myself struct {
-	ID string
-	L  sync.RWMutex
-}
-
-func (p *Myself) Destination() string {
-	p.L.RLock()
-	defer p.L.RUnlock()
+func (p ChatUser) Destination() string {
 	return p.ID
 }
 
-func (p *Myself) UpdateID(new string) {
-	if new != myChatID {
-		p.L.Lock()
-		defer p.L.Unlock()
+func (p *ChatUser) UpdateID(new string) {
+	if new != p.ID {
+		p.Lock()
+		defer p.Unlock()
 		p.ID = new
 	}
 }
 
-func notifyMeText(bot *telebot.Bot, content string) (err error) {
-	return bot.SendMessage(MeRecipient, content, &telebot.SendOptions{DisableWebPagePreview: true})
+func notifyText(bot *telebot.Bot, content string, recipient ChatUser) (err error) {
+	return bot.SendMessage(recipient, content, &telebot.SendOptions{DisableWebPagePreview: true})
 }
 
-func notifyMeHTML(bot *telebot.Bot, content string) (err error) {
-	return bot.SendMessage(MeRecipient, content, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
+func notifyHTML(bot *telebot.Bot, content string, recipient ChatUser) (err error) {
+	return bot.SendMessage(recipient, content, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
 }
 
 type Boxer interface {
 	Message() string
 	Type() string
+	Destination() string
 }
 
 func PollInbox(bot *telebot.Bot, inbox chan Boxer) {
 	var err error
 	for msg := range inbox {
+		charID := msg.Destination()
 		if msg.Type() == "HTML" {
-			err = notifyMeHTML(bot, msg.Message())
+			err = notifyHTML(bot, msg.Message(), ChatUser{ID: charID})
 		} else {
-			err = notifyMeText(bot, msg.Message())
+			err = notifyText(bot, msg.Message(), ChatUser{ID: charID})
 		}
 		printErr(err)
 	}
 }
 
-func NotifyText(s string) {
-	TelegramNotificationBox <- &Notification{s, time.Now(), ""}
+func NotifyText(text, chatID string) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), ""}
 }
 
-func NotifyHTML(s string) {
-	TelegramNotificationBox <- &Notification{s, time.Now(), "HTML"}
+func NotifyHTML(text, chatID string) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML"}
 }
 
 // if is error, return true
-func NotifyErr(err error) bool {
+func NotifyErr(err error, chatID string) bool {
 	if err != nil {
-		NotifyText("error: " + err.Error())
+		NotifyText("error: "+err.Error(), chatID)
 		return true
 	}
 	return false

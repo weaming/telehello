@@ -19,18 +19,18 @@ const (
 var turing Turing
 var listen string
 var period int64
-var fresh bool
+var resetdb bool
 var scanMinutes int
 var doubanScore float64
-var telegramId = "weaming"
+var adminTelegramID = "weaming"
 
 func main() {
 	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\t4. 执行服务器脚本\n\n")
 	// parse args
-	flag.StringVar(&telegramId, "telegramID", telegramId, "your telegram ID without @")
+	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
 	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook to receive message")
 	flag.Int64Var(&period, "t", 30, "telegram bot long poll timeout in seconds")
-	flag.BoolVar(&fresh, "x", false, "delete bot status KV database before start")
+	flag.BoolVar(&resetdb, "x", false, "delete bot status KV database before start")
 	flag.IntVar(&scanMinutes, "rss", 60*24, "period of crawling wanqu.co RSS in minutes")
 	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
@@ -60,7 +60,7 @@ func main() {
 	}()
 
 	// scan RSS feeds
-	if fresh {
+	if resetdb {
 		// delete db file
 		ClearCrawlStatus()
 	}
@@ -79,12 +79,17 @@ func main() {
 
 				// prepare common
 				userID := strconv.Itoa(message.Origin().ID)
-				name := message.Origin().Username
+				userName := message.Origin().Username
 				text := message.Text
 
+				// register user
+				ChatsMap[userID] = ChatUser{TeleName: userName, ID: userID}
+
 				// update chat id with myself
-				if name == telegramId {
-					MeRecipient.UpdateID(userID)
+				if userName == adminTelegramID {
+					if user, ok := ChatsMap["root"]; ok {
+						user.UpdateID(userID)
+					}
 				}
 
 				// process text
@@ -95,7 +100,7 @@ func main() {
 				}
 
 				if text[0] == '/' {
-					responseText = processCommand(text, userID)
+					responseText = processCommand(text, userID, userName)
 				} else {
 					if message.Text == "hi" {
 						responseText = "Hello, " + message.Sender.FirstName + "!"
@@ -136,7 +141,9 @@ func main() {
 		}
 	}()
 
-	NotifyText("程序已启动")
+	if user, ok := ChatsMap["root"]; ok {
+		NotifyText("程序已启动", user.ID)
+	}
 	// block here
 	<-exit
 }

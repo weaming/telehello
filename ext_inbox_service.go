@@ -16,6 +16,7 @@ const (
 
 type Notification struct {
 	Content     string
+	CharID      string
 	ReceiveTime time.Time
 	ContentType string
 }
@@ -26,6 +27,10 @@ func (p *Notification) Message() string {
 
 func (p *Notification) Type() string {
 	return p.ContentType
+}
+
+func (p *Notification) Destination() string {
+	return p.CharID
 }
 
 func RunInboxService(listen string) {
@@ -46,9 +51,16 @@ func RunInboxService(listen string) {
 			body, _ := ioutil.ReadAll(req.Body)
 
 			// push into TelegramNotificationBox
-			NotifyText(fmt.Sprintf("%s\nMessage IP: %s\n", string(body), strings.Split(req.RemoteAddr, ":")[0]))
-			data = map[string]interface{}{
-				"ok": true,
+			if user, ok := ChatsMap["root"]; ok {
+				NotifyText(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
+					strings.Split(req.RemoteAddr, ":")[0]), user.ID)
+				data = map[string]interface{}{
+					"ok": true,
+				}
+			} else {
+				data = map[string]interface{}{
+					"ok": false,
+				}
 			}
 		} else {
 			w.WriteHeader(http.StatusMethodNotAllowed)

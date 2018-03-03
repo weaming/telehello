@@ -35,7 +35,9 @@ func ItemParseWanquDaily(i int, item *gofeed.Item) string {
 }
 
 func GoRSS() {
-	go ScanRSS(RSS_WANQU, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily)
-	go ScanRSS(RSS_HACKMIND, time.Minute*time.Duration(scanMinutes), ItemParseLink)
-	//go ScanRSS(RSS_RUANYIFENG, time.Minute*time.Duration(scanMinutes), ItemParseLink)
+	if user, ok := ChatsMap["root"]; ok {
+		go ScanRSS(RSS_WANQU, user.ID, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily)
+		go ScanRSS(RSS_HACKMIND, user.ID, time.Minute*time.Duration(scanMinutes), ItemParseLink)
+		//go ScanRSS(RSS_RUANYIFENG, time.Minute*time.Duration(scanMinutes), ItemParseLink)
+	}
 }

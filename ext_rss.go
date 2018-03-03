@@ -15,12 +15,12 @@ const (
 
 var db *BoltConnection
 
-func parseFeed(url string, html bool, itemFunc func(int, *gofeed.Item) string) (string, error) {
+func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) string) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	//fmt.Printf("%#v", feed)
 
-	if !NotifyErr(err) {
+	if !NotifyErr(err, chatID) {
 		var itemTextArr []string
 		// title
 		itemTextArr = append(itemTextArr, feed.Title)
@@ -72,14 +72,14 @@ func ClearCrawlStatus() {
 	init_db()
 }
 
-func ScanRSS(url string, delta time.Duration, itemFuc func(int, *gofeed.Item) string) {
+func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string) {
 	for {
-		content, err := parseFeed(url, false, itemFuc)
+		content, err := parseFeed(url, chatID, false, itemFuc)
 		if err != nil && content != "" {
 			// have not updated
 
-		} else if !NotifyErr(err) {
-			NotifyText(content)
+		} else if !NotifyErr(err, chatID) {
+			NotifyText(content, chatID)
 		}
 		timer := time.NewTimer(delta)
 		<-timer.C
@@ -91,41 +91,60 @@ func CloseDB() {
 	printErr(err)
 }
 
-func GetOldURLs() ([]string, error) {
-	old, err := db.Get("meta", "sources")
+func GetOldURLs(bucket string) ([]string, error) {
+	old, err := db.Get(bucket, "sources")
 	if err != nil {
 		return []string{}, err
 	}
 	return strings.Fields(string(old)), nil
 }
 
-func AddRSS(url string, delta time.Duration) error {
-	urls, err := GetOldURLs()
-	NotifyErr(err)
+func AddRSS(userID, url string, delta time.Duration) error {
+	urls, err := GetOldURLs(userID)
+	NotifyErr(err, userID)
 	urls = append(urls, url)
 
-	err = db.Set("meta", "sources", strings.Join(urls, " "))
+	db.CreateBucketIfNotExists(userID)
+	err = db.Set(userID, "sources", strings.Join(urls, " "))
 	if err != nil {
 		return err
 	}
 
 	// should send new notification to app
-	go ScanRSS(url, delta, ItemParseLink)
+	go ScanRSS(url, userID, delta, ItemParseLink)
 	return nil
 }
 
+func DeleteRSS(userID, url string) error {
+	urls, err := GetOldURLs(userID)
+	NotifyErr(err, userID)
+	urls = append(urls, url)
+
+	var newURLs []string
+	for _, u := range urls {
+		if u != url {
+			newURLs = append(newURLs, u)
+		}
+	}
+	err = db.Set(userID, "sources", strings.Join(urls, " "))
+	return err
+}
+
 func StartRSSCrawlers() {
-	urls, err := GetOldURLs()
-	if !NotifyErr(err) {
-		for _, url := range urls {
-			go ScanRSS(url, time.Minute*time.Duration(scanMinutes), ItemParseLink)
+	for userID, user := range ChatsMap {
+		if user.TeleName == adminTelegramID {
+			urls, err := GetOldURLs(userID)
+			if !NotifyErr(err, userID) {
+				for _, url := range urls {
+					go ScanRSS(url, userID, time.Minute*time.Duration(scanMinutes), ItemParseLink)
+				}
+			}
 		}
 	}
 }
 
 func init_db() {
 	db = NewDB(DB_NAME)
-	db.CreateBucketIfNotExists("meta")
 }
 
 func init() {
