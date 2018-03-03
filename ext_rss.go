@@ -11,6 +11,7 @@ import (
 const (
 	updated = "updated"
 	DB_NAME = "telebot.db"
+	rssKey  = "RSS"
 )
 
 var db *BoltConnection
@@ -28,14 +29,15 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 
 		// check sent
 		// prepare db bucket
-		err := db.CreateBucketIfNotExists(url)
+		err := db.CreateBucketIfNotExists(chatID)
 		printErr(err)
 
-		updatedValue, err := db.Get(url, updated)
+		rssUpdateKey := url + updated
+		updatedValue, err := db.Get(chatID, rssUpdateKey)
 		fatalErr(err)
 		sent := feed.Updated == string(updatedValue)
 		defer func() {
-			err = db.Set(url, updated, feed.Updated)
+			err = db.Set(url, rssUpdateKey, feed.Updated)
 			fatalErr(err)
 		}()
 
@@ -91,8 +93,9 @@ func CloseDB() {
 	printErr(err)
 }
 
-func GetOldURLs(bucket string) ([]string, error) {
-	old, err := db.Get(bucket, "sources")
+func GetOldURLs(userID string) ([]string, error) {
+	db.CreateBucketIfNotExists(userID)
+	old, err := db.Get(userID, rssKey)
 	if err != nil {
 		return []string{}, err
 	}
@@ -105,7 +108,7 @@ func AddRSS(userID, url string, delta time.Duration) error {
 	urls = append(urls, url)
 
 	db.CreateBucketIfNotExists(userID)
-	err = db.Set(userID, "sources", strings.Join(urls, " "))
+	err = db.Set(userID, rssKey, strings.Join(urls, " "))
 	if err != nil {
 		return err
 	}
@@ -126,7 +129,7 @@ func DeleteRSS(userID, url string) error {
 			newURLs = append(newURLs, u)
 		}
 	}
-	err = db.Set(userID, "sources", strings.Join(urls, " "))
+	err = db.Set(userID, rssKey, strings.Join(urls, " "))
 	return err
 }
 
