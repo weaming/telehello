@@ -87,9 +87,7 @@ func main() {
 
 				// update chat id with myself
 				if userName == adminTelegramID {
-					if user, ok := ChatsMap["root"]; ok {
-						user.UpdateID(userID)
-					}
+					ChatsMap["root"] = ChatUser{TeleName: userName, ID: userID}
 				}
 
 				// process text
