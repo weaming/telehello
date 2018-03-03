@@ -90,6 +90,12 @@ func main() {
 					ChatsMap["root"] = ChatUser{TeleName: userName, ID: userID}
 				}
 
+				if _, ok := ChatsMap[userID]; !ok {
+					if root, ok2 := ChatsMap["root"]; ok2 {
+						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
+					}
+				}
+
 				// process text
 				var responseText string
 
