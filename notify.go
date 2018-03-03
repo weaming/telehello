@@ -7,7 +7,7 @@ import (
 )
 
 var TelegramNotificationBox = make(chan Boxer, 1000)
-var ChatsMap map[string]ChatUser
+var ChatsMap = make(map[string]ChatUser)
 
 type ChatUser struct {
 	TeleName string
