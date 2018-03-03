@@ -82,18 +82,19 @@ func main() {
 				userName := message.Origin().Username
 				text := message.Text
 
+				// check if new user first
+				if _, ok := ChatsMap[userID]; !ok {
+					if root, ok2 := ChatsMap["root"]; ok2 {
+						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
+					}
+				}
+
 				// register user
 				ChatsMap[userID] = ChatUser{TeleName: userName, ID: userID}
 
 				// update chat id with myself
 				if userName == adminTelegramID {
 					ChatsMap["root"] = ChatUser{TeleName: userName, ID: userID}
-				}
-
-				if _, ok := ChatsMap[userID]; !ok {
-					if root, ok2 := ChatsMap["root"]; ok2 {
-						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
-					}
 				}
 
 				// process text
