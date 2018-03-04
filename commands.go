@@ -77,7 +77,7 @@ func processCommand(text, userID, userName string) string {
 				err := DeleteRSS(userID, u)
 				NotifyErr(err, userID)
 			}
-			return "received rss:\n" + strings.Join(urls, "\n")
+			return "deleted rss:\n" + strings.Join(urls, "\n")
 		} else {
 			return "未给出RSS URL"
 		}
