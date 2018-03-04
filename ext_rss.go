@@ -74,17 +74,29 @@ func ClearCrawlStatus() {
 	init_db()
 }
 
-func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string) {
+func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string, daemon bool) {
 	for {
 		content, err := parseFeed(url, chatID, false, itemFuc)
 		if err != nil && content != "" {
 			// have not updated
 
 		} else if !NotifyErr(err, chatID) {
+			// send rss content
 			NotifyText(content, chatID)
+
+			// log to admin
+			if admin, ok := ChatsMap[AdminKey]; ok {
+				NotifyText(fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String()),
+					admin.Destination())
+			}
 		}
-		timer := time.NewTimer(delta)
-		<-timer.C
+
+		if daemon {
+			timer := time.NewTimer(delta)
+			<-timer.C
+		} else {
+			break
+		}
 	}
 }
 
@@ -114,7 +126,7 @@ func AddRSS(userID, url string, delta time.Duration) error {
 	}
 
 	// should send new notification to app
-	go ScanRSS(url, userID, delta, ItemParseLink)
+	go ScanRSS(url, userID, delta, ItemParseLink, true)
 	return nil
 }
 
@@ -133,15 +145,17 @@ func DeleteRSS(userID, url string) error {
 	return err
 }
 
-func StartRSSCrawlers() {
-	for userID, user := range ChatsMap {
-		if user.TeleName == adminTelegramID {
-			urls, err := GetOldURLs(userID)
-			if !NotifyErr(err, userID) {
-				for _, url := range urls {
-					go ScanRSS(url, userID, time.Minute*time.Duration(scanMinutes), ItemParseLink)
-				}
-			}
+func StartRSSCrawlers(daemon bool) {
+	for userID := range ChatsMap {
+		CrawlerForUser(userID, daemon)
+	}
+}
+
+func CrawlerForUser(userID string, daemon bool) {
+	urls, err := GetOldURLs(userID)
+	if !NotifyErr(err, userID) {
+		for _, url := range urls {
+			go ScanRSS(url, userID, time.Minute*time.Duration(scanMinutes), ItemParseLink, daemon)
 		}
 	}
 }
@@ -152,5 +166,5 @@ func init_db() {
 
 func init() {
 	init_db()
-	StartRSSCrawlers()
+	StartRSSCrawlers(true)
 }

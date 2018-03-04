@@ -51,9 +51,9 @@ func RunInboxService(listen string) {
 			body, _ := ioutil.ReadAll(req.Body)
 
 			// push into TelegramNotificationBox
-			if user, ok := ChatsMap["root"]; ok {
+			if admin, ok := ChatsMap[AdminKey]; ok {
 				NotifyText(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
-					strings.Split(req.RemoteAddr, ":")[0]), user.ID)
+					strings.Split(req.RemoteAddr, ":")[0]), admin.ID)
 				data = map[string]interface{}{
 					"ok": true,
 				}

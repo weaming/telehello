@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -23,26 +24,37 @@ func processCommand(text, userID, userName string) string {
 			"/delrss   删除RSS源",
 			"/listrss  列出已添加的源",
 		}, "\n")
-	} else if cmd == "secret" {
+	} else if cmd == "admin" {
 		return strings.Join([]string{
 			"/status   supervisord状态",
 			"/storage  查看磁盘空间",
 			"/uptime   查看服务器运行总时间",
+			"/users 查看从上次运行后新建的客户数",
+			"/debug    查看我的ChatID",
 		}, "\n")
+
 	} else if cmd == "status" {
 		return ShellCommand("sudo supervisorctl status")
 	} else if cmd == "storage" {
 		return ShellCommand("sudo df -h")
 	} else if cmd == "uptime" {
 		return ShellCommand("uptime")
+
+	} else if cmd == "debug" {
+		return ChatsMap[userID].String()
 	} else if cmd == "weather" {
 		return turing.answer("查天气 "+body, userID)
-		// } else if cmd == "shell" {
-		// 	if l == 2 {
-		// 		return ShellCommand(body)
-		// 	} else {
-		// 		return "未给出命令"
-		// 	}
+	} else if cmd == "users" {
+		if admin, ok := ChatsMap[AdminKey]; ok {
+			if userID == admin.ID {
+				var chats []string
+				for _, chat := range ChatsMap {
+					chats = append(chats, fmt.Sprintf("%v(%v)", chat.TeleName, chat.ID))
+				}
+				return strings.Join(chats, "\n")
+			}
+		}
+		return "Only administrator can view users"
 	} else if cmd == "addrss" {
 		if l == 2 {
 			urls := strings.Fields(body)
@@ -54,6 +66,9 @@ func processCommand(text, userID, userName string) string {
 		} else {
 			return "未给出RSS URL"
 		}
+	} else if cmd == "forcerss" {
+		CrawlerForUser(userID, false)
+		NotifyText("force crawled your RSSes", userID)
 	} else if cmd == "delrss" {
 		if l == 2 {
 			urls := strings.Fields(body)

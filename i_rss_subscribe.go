@@ -34,10 +34,8 @@ func ItemParseWanquDaily(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, url)
 }
 
-func GoRSS() {
-	if user, ok := ChatsMap["root"]; ok {
-		go ScanRSS(RSS_WANQU, user.ID, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily)
-		go ScanRSS(RSS_HACKMIND, user.ID, time.Minute*time.Duration(scanMinutes), ItemParseLink)
-		//go ScanRSS(RSS_RUANYIFENG, time.Minute*time.Duration(scanMinutes), ItemParseLink)
-	}
+func GoBuiltinRSS(id string) {
+	go ScanRSS(RSS_WANQU, id, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily, true)
+	go ScanRSS(RSS_HACKMIND, id, time.Minute*time.Duration(scanMinutes), ItemParseLink, true)
+	//go ScanRSS(RSS_RUANYIFENG, time.Minute*time.Duration(scanMinutes), ItemParseLink)
 }

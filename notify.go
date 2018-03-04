@@ -1,13 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"github.com/tucnak/telebot"
 	"sync"
 	"time"
 )
 
 var TelegramNotificationBox = make(chan Boxer, 1000)
-var ChatsMap = make(map[string]ChatUser)
+var ChatsMap = make(map[string]*ChatUser)
+var AdminKey = "admin"
 
 type ChatUser struct {
 	TeleName string
@@ -25,6 +27,10 @@ func (p *ChatUser) UpdateID(new string) {
 		defer p.Unlock()
 		p.ID = new
 	}
+}
+
+func (p *ChatUser) String() string {
+	return fmt.Sprintf("%v(%v)", p.TeleName, p.ID)
 }
 
 func notifyText(bot *telebot.Bot, content string, recipient ChatUser) (err error) {

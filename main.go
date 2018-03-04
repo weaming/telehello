@@ -64,7 +64,6 @@ func main() {
 		// delete db file
 		ClearCrawlStatus()
 	}
-	GoRSS()
 	defer CloseDB()
 
 	// douban host movie
@@ -84,17 +83,21 @@ func main() {
 
 				// check if new user first
 				if _, ok := ChatsMap[userID]; !ok {
-					if root, ok2 := ChatsMap["root"]; ok2 {
+					if root, ok2 := ChatsMap[AdminKey]; ok2 {
+						// send log to admin
 						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
+					} else {
+						// crawl defaults RSSes for weaming
+						GoBuiltinRSS(userID)
 					}
 				}
 
-				// register user
-				ChatsMap[userID] = ChatUser{TeleName: userName, ID: userID}
+				// register/update user
+				ChatsMap[userID] = &ChatUser{TeleName: userName, ID: userID}
 
 				// update chat id with myself
 				if userName == adminTelegramID {
-					ChatsMap["root"] = ChatUser{TeleName: userName, ID: userID}
+					ChatsMap[AdminKey] = &ChatUser{TeleName: userName, ID: userID}
 				}
 
 				// process text
@@ -146,9 +149,7 @@ func main() {
 		}
 	}()
 
-	if user, ok := ChatsMap["root"]; ok {
-		NotifyText("程序已启动", user.ID)
-	}
+	fmt.Println("Started")
 	// block here
 	<-exit
 }
