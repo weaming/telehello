@@ -37,7 +37,7 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 		fatalErr(err)
 		sent := feed.Updated == string(updatedValue)
 		defer func() {
-			err = db.Set(url, rssUpdateKey, feed.Updated)
+			err = db.Set(chatID, rssUpdateKey, feed.Updated)
 			fatalErr(err)
 		}()
 
