@@ -133,7 +133,6 @@ func AddRSS(userID, url string, delta time.Duration) error {
 func DeleteRSS(userID, url string) error {
 	urls, err := GetOldURLs(userID)
 	NotifyErr(err, userID)
-	urls = append(urls, url)
 
 	var newURLs []string
 	for _, u := range urls {
@@ -141,7 +140,7 @@ func DeleteRSS(userID, url string) error {
 			newURLs = append(newURLs, u)
 		}
 	}
-	err = db.Set(userID, rssKey, strings.Join(urls, " "))
+	err = db.Set(userID, rssKey, strings.Join(newURLs, " "))
 	return err
 }
 
