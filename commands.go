@@ -68,7 +68,7 @@ func processCommand(text, userID, userName string) string {
 		}
 	} else if cmd == "forcerss" {
 		CrawlerForUser(userID, false)
-		NotifyText("force crawled your RSSes", userID)
+		return "force crawled your RSSes"
 	} else if cmd == "delrss" {
 		if l == 2 {
 			urls := strings.Fields(body)
