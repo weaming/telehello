@@ -23,6 +23,7 @@ func processCommand(text, userID, userName string) string {
 			"/addrss   添加RSS源",
 			"/delrss   删除RSS源",
 			"/listrss  列出已添加的源",
+			"/forcerss 强制立即抓取",
 		}, "\n")
 	} else if cmd == "admin" {
 		return strings.Join([]string{
