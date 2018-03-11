@@ -37,7 +37,7 @@ func prettyUser(user telebot.User) string {
 }
 
 func prettyTime(t time.Time) string {
-	return t.Format("2006-01-02 03:04:05")
+	return t.Format("2006-01-02 15:04:05")
 	return fmt.Sprintf("%v-%v-%v %v:%v:%v",
 		t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
