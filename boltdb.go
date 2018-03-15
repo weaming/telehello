@@ -90,19 +90,19 @@ func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, err
 		return fields, err1
 	}
 
+	tmp := append(fields, value)
 	var newFields []string
 
 outer:
-	for _, x := range fields {
-		for _, y := range fields {
-			if y == x {
+	for x, a := range tmp {
+		for y, b := range tmp {
+			if y != x && b == a {
 				continue outer
 			}
 		}
-		newFields = append(newFields, x)
+		newFields = append(newFields, a)
 	}
 
-	newFields = append(newFields, value)
 	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
 	if err2 != nil {
 		return fields, err2

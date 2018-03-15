@@ -120,8 +120,9 @@ func GetChatIDList() []string {
 }
 
 func AddRSS(userID, url string, delta time.Duration) error {
-	_, err := db.AddFieldInDB(userID, rssKey, url)
+	urls, err := db.AddFieldInDB(userID, rssKey, url)
 	NotifyErr(err, userID)
+	NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
 	go ScanRSS(url, userID, delta, ItemParseLink, true)
