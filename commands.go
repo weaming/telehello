@@ -63,7 +63,7 @@ func processCommand(text, userID, userName string) string {
 			urls := strings.Fields(body)
 			for _, u := range urls {
 				err := AddRSS(userID, u, time.Minute*time.Duration(scanMinutes))
-				NotifyErr(err, userID)
+				NotifiedErr(err, userID)
 			}
 			return "received rss:\n" + strings.Join(urls, "\n")
 		} else {
@@ -77,7 +77,7 @@ func processCommand(text, userID, userName string) string {
 			urls := strings.Fields(body)
 			for _, u := range urls {
 				err := DeleteRSS(userID, u)
-				NotifyErr(err, userID)
+				NotifiedErr(err, userID)
 			}
 			return "deleted rss:\n" + strings.Join(urls, "\n")
 		} else {

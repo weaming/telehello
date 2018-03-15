@@ -28,7 +28,7 @@ func ScanDoubanMovie(score float64, delta time.Duration) {
 	if admin, ok := ChatsMap[AdminKey]; ok {
 		for {
 			txt, err := GetHotMovieText("深圳", score)
-			if !NotifyErr(err, admin.ID) {
+			if !NotifiedErr(err, admin.ID) {
 				NotifyText(strings.Join(txt, "\n\n"), admin.ID)
 			}
 			timer := time.NewTimer(time.Minute * delta)

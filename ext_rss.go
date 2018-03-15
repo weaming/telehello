@@ -24,7 +24,7 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 	feed, err := fp.ParseURL(url)
 	//fmt.Printf("%#v", feed)
 
-	if !NotifyErr(err, chatID) {
+	if !NotifiedErr(err, chatID) {
 		var itemTextArr []string
 		// title
 		itemTextArr = append(itemTextArr, feed.Title)
@@ -80,10 +80,7 @@ func ClearCrawlStatus() {
 func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string, daemon bool) {
 	for {
 		content, err := parseFeed(url, chatID, false, itemFuc)
-		if err != nil && content != "" {
-			// have not updatedKey
-
-		} else if !NotifyErr(err, chatID) {
+		if !NotifiedErr(err, chatID) {
 			// send rss content
 			NotifyText(content, chatID)
 
@@ -121,7 +118,7 @@ func GetChatIDList() []string {
 
 func AddRSS(userID, url string, delta time.Duration) error {
 	urls, err := db.AddFieldInDB(userID, rssKey, url)
-	NotifyErr(err, userID)
+	NotifiedErr(err, userID)
 	NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
@@ -131,7 +128,7 @@ func AddRSS(userID, url string, delta time.Duration) error {
 
 func DeleteRSS(userID, url string) error {
 	urls, err := GetOldURLs(userID)
-	NotifyErr(err, userID)
+	NotifiedErr(err, userID)
 
 	var newURLs []string
 	for _, u := range urls {
@@ -151,7 +148,7 @@ func StartRSSCrawlers(daemon bool) {
 
 func CrawlerForUser(userID string, daemon bool) {
 	urls, err := GetOldURLs(userID)
-	if !NotifyErr(err, userID) {
+	if !NotifiedErr(err, userID) {
 		for _, url := range urls {
 			go ScanRSS(url, userID, time.Minute*time.Duration(scanMinutes), ItemParseLink, daemon)
 		}
