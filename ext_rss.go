@@ -110,33 +110,18 @@ func CloseDB() {
 	printErr(err)
 }
 
-func getFieldsInDB(bucket, key string) ([]string, error) {
-	db.CreateBucketIfNotExists(bucket)
-	old, err := db.Get(bucket, key)
-	if err != nil {
-		return []string{}, err
-	}
-	return strings.Fields(string(old)), nil
-}
-
 func GetOldURLs(userID string) ([]string, error) {
-	return getFieldsInDB(userID, rssKey)
+	return db.GetFieldsInDB(userID, rssKey)
 }
 
-func getChatIDList() []string {
-	chats, _ := getFieldsInDB(globalKey, chatListKey)
+func GetChatIDList() []string {
+	chats, _ := db.GetFieldsInDB(globalKey, chatListKey)
 	return chats
 }
 
 func AddRSS(userID, url string, delta time.Duration) error {
-	urls, err := GetOldURLs(userID)
+	_, err := db.AddFieldInDB(userID, rssKey, url)
 	NotifyErr(err, userID)
-	urls = append(urls, url)
-
-	err = db.Set(userID, rssKey, strings.Join(urls, " "))
-	if err != nil {
-		return err
-	}
 
 	// should send new notification to app
 	go ScanRSS(url, userID, delta, ItemParseLink, true)
@@ -158,7 +143,7 @@ func DeleteRSS(userID, url string) error {
 }
 
 func StartRSSCrawlers(daemon bool) {
-	for _, chatID := range getChatIDList() {
+	for _, chatID := range GetChatIDList() {
 		CrawlerForUser(chatID, daemon)
 	}
 }

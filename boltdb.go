@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -72,4 +73,39 @@ func (p *BoltConnection) Clear() error {
 		log.Println("deleted database", fp)
 	}
 	return err
+}
+
+func (db *BoltConnection) GetFieldsInDB(bucket, key string) ([]string, error) {
+	db.CreateBucketIfNotExists(bucket)
+	old, err := db.Get(bucket, key)
+	if err != nil {
+		return []string{}, err
+	}
+	return strings.Fields(string(old)), nil
+}
+
+func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, error) {
+	fields, err1 := db.GetFieldsInDB(bucket, key)
+	if err1 != nil {
+		return fields, err1
+	}
+
+	var newFields []string
+
+outer:
+	for _, x := range fields {
+		for _, y := range fields {
+			if y == x {
+				continue outer
+			}
+		}
+		newFields = append(newFields, x)
+	}
+
+	newFields = append(newFields, value)
+	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
+	if err2 != nil {
+		return fields, err2
+	}
+	return newFields, nil
 }

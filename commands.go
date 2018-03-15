@@ -53,7 +53,7 @@ func processCommand(text, userID, userName string) string {
 					chats = append(chats, fmt.Sprintf("%v(%v)", chat.TeleName, chat.ID))
 				}
 				chats = append(chats, "Chats IDs in DB:")
-				chats = extendStringList(chats, getChatIDList())
+				chats = extendStringList(chats, GetChatIDList())
 				return strings.Join(chats, "\n")
 			}
 		}
