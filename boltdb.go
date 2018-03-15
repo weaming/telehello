@@ -95,7 +95,7 @@ func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, err
 
 outer:
 	for x, a := range tmp {
-		for y, b := range tmp {
+		for y, b := range newFields {
 			if y != x && b == a {
 				continue outer
 			}
