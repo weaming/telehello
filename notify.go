@@ -68,11 +68,14 @@ func NotifyHTML(text, chatID string) {
 	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML"}
 }
 
-func NotifiedErr(err error, chatID string) bool {
+func NotifiedLog(err error, chatID, level string) bool {
 	if err != nil {
-		NotifyText("error: "+err.Error(), chatID)
+		NotifyText(fmt.Sprintf("%v: %v", level, err.Error()), chatID)
 		// if is error, return true
 		return true
 	}
 	return false
+}
+func NotifiedErr(err error, chatID string) bool {
+	return NotifiedLog(err, chatID, "error")
 }

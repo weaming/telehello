@@ -87,7 +87,7 @@ func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.
 outer:
 	for {
 		content, err := parseFeed(url, chatID, false, itemFuc)
-		if !NotifiedErr(err, chatID) {
+		if !NotifiedLog(err, chatID, "info") {
 			// send rss content
 			NotifyText(content, chatID)
 
