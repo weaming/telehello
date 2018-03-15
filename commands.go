@@ -89,7 +89,7 @@ func processCommand(text, userID, userName string) string {
 			return "error getting RSS: " + err.Error()
 		}
 		if len(urls) == 0 {
-			return "haven't receive any additional RSS"
+			return "haven't received any additional RSS"
 		}
 		return "received rss:\n" + strings.Join(urls, "\n")
 	}

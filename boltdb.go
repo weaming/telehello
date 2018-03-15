@@ -118,6 +118,7 @@ func (db *BoltConnection) RemoveFieldInDB(bucket, key, value string) ([]string, 
 		if x == value {
 			continue
 		}
+		newFields = append(newFields, x)
 	}
 
 	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
