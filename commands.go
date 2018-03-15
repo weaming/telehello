@@ -48,10 +48,12 @@ func processCommand(text, userID, userName string) string {
 	} else if cmd == "users" {
 		if admin, ok := ChatsMap[AdminKey]; ok {
 			if userID == admin.ID {
-				var chats []string
+				chats := []string{"New users since last starting running:"}
 				for _, chat := range ChatsMap {
 					chats = append(chats, fmt.Sprintf("%v(%v)", chat.TeleName, chat.ID))
 				}
+				chats = append(chats, "Chats IDs in DB:")
+				chats = extendStringList(chats, getChatIDList())
 				return strings.Join(chats, "\n")
 			}
 		}

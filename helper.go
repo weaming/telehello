@@ -126,3 +126,11 @@ func maxFileSize(files []telebot.Thumbnail) (f telebot.Thumbnail, err error) {
 	}
 	return
 }
+
+func extendStringList(a, b []string) []string {
+	for _, x := range b {
+		a = append(a, x)
+	}
+
+	return a
+}

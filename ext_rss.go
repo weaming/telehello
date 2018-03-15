@@ -9,9 +9,12 @@ import (
 )
 
 const (
-	updated = "updated"
-	DB_NAME = "telebot.db"
-	rssKey  = "RSS"
+	DBName     = "telebot.db"
+	updatedKey = "updatedDate"
+	rssKey     = "RSS"
+	// store global meta information, such as users list, rather than user individual info
+	globalKey   = "global"
+	chatListKey = "chats_list"
 )
 
 var db *BoltConnection
@@ -32,7 +35,7 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 		err := db.CreateBucketIfNotExists(chatID)
 		printErr(err)
 
-		rssUpdateKey := url + updated
+		rssUpdateKey := url + updatedKey
 		updatedValue, err := db.Get(chatID, rssUpdateKey)
 		fatalErr(err)
 		sent := feed.Updated == string(updatedValue)
@@ -78,7 +81,7 @@ func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.
 	for {
 		content, err := parseFeed(url, chatID, false, itemFuc)
 		if err != nil && content != "" {
-			// have not updated
+			// have not updatedKey
 
 		} else if !NotifyErr(err, chatID) {
 			// send rss content
@@ -86,8 +89,10 @@ func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.
 
 			// log to admin
 			if admin, ok := ChatsMap[AdminKey]; ok {
-				NotifyText(fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String()),
-					admin.Destination())
+				if chatID != admin.Destination() {
+					NotifyText(fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String()),
+						admin.Destination())
+				}
 			}
 		}
 
@@ -105,13 +110,22 @@ func CloseDB() {
 	printErr(err)
 }
 
-func GetOldURLs(userID string) ([]string, error) {
-	db.CreateBucketIfNotExists(userID)
-	old, err := db.Get(userID, rssKey)
+func getFieldsInDB(bucket, key string) ([]string, error) {
+	db.CreateBucketIfNotExists(bucket)
+	old, err := db.Get(bucket, key)
 	if err != nil {
 		return []string{}, err
 	}
 	return strings.Fields(string(old)), nil
+}
+
+func GetOldURLs(userID string) ([]string, error) {
+	return getFieldsInDB(userID, rssKey)
+}
+
+func getChatIDList() []string {
+	chats, _ := getFieldsInDB(globalKey, chatListKey)
+	return chats
 }
 
 func AddRSS(userID, url string, delta time.Duration) error {
@@ -119,7 +133,6 @@ func AddRSS(userID, url string, delta time.Duration) error {
 	NotifyErr(err, userID)
 	urls = append(urls, url)
 
-	db.CreateBucketIfNotExists(userID)
 	err = db.Set(userID, rssKey, strings.Join(urls, " "))
 	if err != nil {
 		return err
@@ -145,8 +158,8 @@ func DeleteRSS(userID, url string) error {
 }
 
 func StartRSSCrawlers(daemon bool) {
-	for userID := range ChatsMap {
-		CrawlerForUser(userID, daemon)
+	for _, chatID := range getChatIDList() {
+		CrawlerForUser(chatID, daemon)
 	}
 }
 
@@ -160,7 +173,8 @@ func CrawlerForUser(userID string, daemon bool) {
 }
 
 func init_db() {
-	db = NewDB(DB_NAME)
+	db = NewDB(DBName)
+	db.CreateBucketIfNotExists(globalKey)
 }
 
 func init() {
