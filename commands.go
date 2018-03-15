@@ -70,7 +70,7 @@ func processCommand(text, userID, userName string) string {
 			return "未给出RSS URL"
 		}
 	} else if cmd == "forcerss" {
-		CrawlerForUser(userID, false)
+		CrawlForUser(userID, false)
 		return "force crawled your RSSes"
 	} else if cmd == "delrss" {
 		if l == 2 {

@@ -19,6 +19,12 @@ const (
 
 var db *BoltConnection
 
+type DeleteRSSSignal struct {
+	ChatID, URL string
+}
+
+var deleteRssChan = make(chan DeleteRSSSignal, 100)
+
 func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) string) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
@@ -78,6 +84,7 @@ func ClearCrawlStatus() {
 }
 
 func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string, daemon bool) {
+outer:
 	for {
 		content, err := parseFeed(url, chatID, false, itemFuc)
 		if !NotifiedErr(err, chatID) {
@@ -95,8 +102,24 @@ func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.
 
 		if daemon {
 			timer := time.NewTimer(delta)
-			<-timer.C
+			for {
+				select {
+				case pair := <-deleteRssChan:
+					if pair.ChatID == chatID && pair.URL == url {
+						NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID)
+						break outer
+					}
+					// else put signal back
+					deleteRssChan <- pair
+				case <-timer.C:
+					// timeout, then crawl for next time
+					break
+				default:
+					// do nothing
+				}
+			}
 		} else {
+			// exit after crawling
 			break
 		}
 	}
@@ -127,26 +150,20 @@ func AddRSS(userID, url string, delta time.Duration) error {
 }
 
 func DeleteRSS(userID, url string) error {
-	urls, err := GetOldURLs(userID)
+	_, err := db.RemoveFieldInDB(userID, rssKey, url)
 	NotifiedErr(err, userID)
 
-	var newURLs []string
-	for _, u := range urls {
-		if u != url {
-			newURLs = append(newURLs, u)
-		}
-	}
-	err = db.Set(userID, rssKey, strings.Join(newURLs, " "))
+	deleteRssChan <- DeleteRSSSignal{ChatID: userID, URL: url}
 	return err
 }
 
 func StartRSSCrawlers(daemon bool) {
 	for _, chatID := range GetChatIDList() {
-		CrawlerForUser(chatID, daemon)
+		CrawlForUser(chatID, daemon)
 	}
 }
 
-func CrawlerForUser(userID string, daemon bool) {
+func CrawlForUser(userID string, daemon bool) {
 	urls, err := GetOldURLs(userID)
 	if !NotifiedErr(err, userID) {
 		for _, url := range urls {

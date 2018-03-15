@@ -55,10 +55,7 @@ func (p *BoltConnection) Get(bucket, key string) ([]byte, error) {
 		value = tx.Bucket([]byte(bucket)).Get([]byte(key))
 		return nil
 	})
-	if err != nil {
-		return value, err
-	}
-	return value, nil
+	return value, err
 }
 
 func (p *BoltConnection) Close() error {
@@ -101,6 +98,26 @@ outer:
 			}
 		}
 		newFields = append(newFields, a)
+	}
+
+	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
+	if err2 != nil {
+		return fields, err2
+	}
+	return newFields, nil
+}
+
+func (db *BoltConnection) RemoveFieldInDB(bucket, key, value string) ([]string, error) {
+	fields, err1 := db.GetFieldsInDB(bucket, key)
+	if err1 != nil {
+		return fields, err1
+	}
+
+	var newFields []string
+	for _, x := range fields {
+		if x == value {
+			continue
+		}
 	}
 
 	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
