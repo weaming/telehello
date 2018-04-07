@@ -39,6 +39,16 @@ func RunInboxService(listen string) {
 		w.Write([]byte(`POST content to <a href="/api/new">/api/new</a> to send notification to me.`))
 	})
 
+	http.HandleFunc("/status/users", func(w http.ResponseWriter, req *http.Request) {
+		js, err := json.Marshal(ChatsMap)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+	})
+
 	http.HandleFunc("/api/new", func(w http.ResponseWriter, req *http.Request) {
 		// json type
 		w.Header().Set("Content-Type", "application/json")

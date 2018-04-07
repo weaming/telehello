@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mmcdole/gofeed"
+	"log"
 	"strings"
 	"time"
 )
@@ -86,6 +87,7 @@ func ClearCrawlStatus() {
 func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string, daemon bool) {
 outer:
 	for {
+		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, delta, daemon)
 		content, err := parseFeed(url, chatID, false, itemFuc)
 		if !NotifiedLog(err, chatID, "info") {
 			// send rss content
@@ -102,18 +104,19 @@ outer:
 
 		if daemon {
 			timer := time.NewTimer(delta)
+		waitDelete:
 			for {
 				select {
 				case pair := <-deleteRssChan:
 					if pair.ChatID == chatID && pair.URL == url {
-						NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID)
+						defer func() { NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID) }()
 						break outer
 					}
 					// else put signal back
 					deleteRssChan <- pair
 				case <-timer.C:
 					// timeout, then crawl for next time
-					break
+					break waitDelete
 				default:
 					// do nothing
 				}
