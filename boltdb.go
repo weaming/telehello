@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"gopkg.in/fatih/set.v0"
 )
 
 type BoltConnection struct {
@@ -87,17 +88,12 @@ func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, err
 		return fields, err1
 	}
 
-	tmp := append(fields, value)
-	var newFields []string
 
-outer:
-	for x, a := range tmp {
-		for y, b := range newFields {
-			if y != x && b == a {
-				continue outer
-			}
-		}
-		newFields = append(newFields, a)
+	tmp := append(fields, value)
+	s := set.New(tmp)
+	var newFields []string
+	for _, x := range s.List() {
+		newFields = append(newFields, x.(string))
 	}
 
 	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
