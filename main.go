@@ -18,13 +18,13 @@ const (
 
 var turing Turing
 var listen string
-var period int64
+var period int64 = 30
 var resetdb bool
-var scanMinutes int
+var scanMinutes int = 60 * 24
 var doubanScore float64
 var adminTelegramID = "weaming"
 
-func main() {
+func init() {
 	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\t4. 执行服务器脚本\n\n")
 	// parse args
 	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
@@ -34,7 +34,9 @@ func main() {
 	flag.IntVar(&scanMinutes, "rss", 60*24, "period of crawling wanqu.co RSS in minutes")
 	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
+}
 
+func main() {
 	// telegram robot
 	token := os.Getenv("BOT_TOKEN")
 	if token == "" {

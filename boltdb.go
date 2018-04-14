@@ -128,6 +128,10 @@ func interface2string(in []interface{}) []string {
 }
 
 func ToSet(in []string) []string {
-	s := set.New(in)
+	ss := make([]interface{}, len(in))
+	for i, v := range in {
+		ss[i] = v
+	}
+	s := set.New(ss...)
 	return interface2string(s.List())
 }
