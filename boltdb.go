@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	"gopkg.in/fatih/set.v0"
 	"log"
 	"os"
 	"strings"
 	"time"
-	"gopkg.in/fatih/set.v0"
 )
 
 type BoltConnection struct {
@@ -79,7 +79,7 @@ func (db *BoltConnection) GetFieldsInDB(bucket, key string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	return strings.Fields(string(old)), nil
+	return ToSet(strings.Fields(string(old))), nil
 }
 
 func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, error) {
@@ -88,13 +88,8 @@ func (db *BoltConnection) AddFieldInDB(bucket, key, value string) ([]string, err
 		return fields, err1
 	}
 
-
 	tmp := append(fields, value)
-	s := set.New(tmp)
-	var newFields []string
-	for _, x := range s.List() {
-		newFields = append(newFields, x.(string))
-	}
+	newFields := ToSet(tmp)
 
 	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
 	if err2 != nil {
@@ -117,9 +112,22 @@ func (db *BoltConnection) RemoveFieldInDB(bucket, key, value string) ([]string, 
 		newFields = append(newFields, x)
 	}
 
-	err2 := db.Set(bucket, key, strings.Join(newFields, " "))
+	err2 := db.Set(bucket, key, strings.Join(ToSet(newFields), " "))
 	if err2 != nil {
 		return fields, err2
 	}
 	return newFields, nil
+}
+
+func interface2string(in []interface{}) []string {
+	var newFields []string
+	for _, x := range in {
+		newFields = append(newFields, x.(string))
+	}
+	return newFields
+}
+
+func ToSet(in []string) []string {
+	s := set.New(in)
+	return interface2string(s.List())
 }
