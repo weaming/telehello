@@ -94,12 +94,8 @@ outer:
 			NotifyText(content, chatID)
 
 			// log to admin
-			if admin, ok := ChatsMap[AdminKey]; ok {
-				if chatID != admin.Destination() {
-					NotifyText(fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String()),
-						admin.Destination())
-				}
-			}
+			text := fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String())
+			NotifyAdmin(text, chatID)
 		}
 
 		if daemon {
@@ -128,6 +124,14 @@ outer:
 	}
 }
 
+func NotifyAdmin(text, chatID string) {
+	if admin, ok := ChatsMap[AdminKey]; ok {
+		if chatID != admin.Destination() {
+			NotifyText(text, admin.Destination())
+		}
+	}
+}
+
 func CloseDB() {
 	err := db.Close()
 	printErr(err)
@@ -142,7 +146,17 @@ func GetChatIDList() []string {
 	return chats
 }
 
+func AddUser(id string) {
+	// add userID to list in DB
+	_, err := db.AddFieldInDB(globalKey, chatListKey, id)
+	if err != nil {
+		NotifyAdmin(err.Error(), id)
+	}
+}
+
 func AddRSS(userID, url string, delta time.Duration) error {
+	AddUser(userID)
+
 	urls, err := db.AddFieldInDB(userID, rssKey, url)
 	NotifiedErr(err, userID)
 	NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)

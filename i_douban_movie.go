@@ -25,8 +25,8 @@ func GetHotMovieText(city string, score float64) ([]string, error) {
 }
 
 func ScanDoubanMovie(score float64, delta time.Duration) {
-	if admin, ok := ChatsMap[AdminKey]; ok {
-		for {
+	for {
+		if admin, ok := ChatsMap[AdminKey]; ok {
 			txt, err := GetHotMovieText("深圳", score)
 			if !NotifiedErr(err, admin.ID) {
 				NotifyText(strings.Join(txt, "\n\n"), admin.ID)

@@ -83,22 +83,22 @@ func main() {
 
 				// check if new user first
 				if _, ok := ChatsMap[userID]; !ok {
+					AddUser(userID)
+
 					if root, ok2 := ChatsMap[AdminKey]; ok2 {
 						// send log to admin
 						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
-					} else {
+					}
+					if userName == adminTelegramID {
 						// crawl defaults RSSes for weaming
 						GoBuiltinRSS(userID)
+						// update chat id with myself
+						ChatsMap[AdminKey] = &ChatUser{TeleName: userName, ID: userID}
 					}
 				}
 
 				// register/update user
 				ChatsMap[userID] = &ChatUser{TeleName: userName, ID: userID}
-
-				// update chat id with myself
-				if userName == adminTelegramID {
-					ChatsMap[AdminKey] = &ChatUser{TeleName: userName, ID: userID}
-				}
 
 				// process text
 				var responseText string
