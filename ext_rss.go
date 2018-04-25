@@ -62,10 +62,9 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 		//fmt.Println(content)
 
 		if sent {
-			return content, errors.New(fmt.Sprintf("crawled %v, but don't have any update", url))
-		} else {
-			return content, nil
+			log.Printf("crawled %v, but don't have any update\n", url)
 		}
+		return content, nil
 	}
 	return "", errors.New(fmt.Sprintf("error during crawling %v: %v", url, err))
 }
