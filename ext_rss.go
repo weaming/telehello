@@ -93,8 +93,10 @@ outer:
 			NotifyText(content, chatID)
 
 			// log to admin
-			text := fmt.Sprintf("sent %v to %v", url, ChatsMap[chatID].String())
-			NotifyAdmin(text, chatID)
+			if user, ok := ChatsMap[chatID]; ok {
+				text := fmt.Sprintf("sent %v to %v", url, user.String())
+				NotifyAdmin(text, chatID)
+			}
 		}
 
 		if daemon {
