@@ -27,6 +27,24 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/jasonlvhit/gocron"
+  packages = ["."]
+  revision = "54194c9749d48b073c9aeb2c787b6882e95dd0cd"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/jinzhu/now"
+  packages = ["."]
+  revision = "b7dfa9a2450405d4ee01eb238dcb873b3dc5336c"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
+  version = "v1.6.0"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mitchellh/hashstructure"
   packages = ["."]
   revision = "2bca23e0e452137f789efbc8610126fd8b94f73b"
@@ -101,9 +119,15 @@
   ]
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
+[[projects]]
+  name = "gopkg.in/fatih/set.v0"
+  packages = ["."]
+  revision = "57907de300222151a123d29255ed17f5ed43fad3"
+  version = "v0.1.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f23d8c105571164f4b6be02a71c24c3dd55847fdb91b88ac46f055eeeed26f00"
+  inputs-digest = "ddcff0fa2637eba6227069128516d05b05ef90b1c765f39e6da867c1fd0640c3"
   solver-name = "gps-cdcl"
   solver-version = 1

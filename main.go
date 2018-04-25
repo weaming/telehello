@@ -23,12 +23,14 @@ var resetdb bool
 var scanMinutes int = 60 * 24
 var doubanScore float64
 var adminTelegramID = "weaming"
+var sqlite3dbDir = "."
 
 func init() {
 	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\t4. 执行服务器脚本\n\n")
 	// parse args
 	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
 	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook to receive message")
+	flag.StringVar(&sqlite3dbDir, "sqlite3", sqlite3dbDir, "sqlite3 database directory to store reminder information")
 	flag.Int64Var(&period, "t", 30, "telegram bot long poll timeout in seconds")
 	flag.BoolVar(&resetdb, "x", false, "delete bot status KV database before start")
 	flag.IntVar(&scanMinutes, "rss", 60*24, "period of crawling wanqu.co RSS in minutes")
@@ -45,6 +47,10 @@ func main() {
 	bot, err := telebot.NewBot(token)
 	fatalErr(err)
 	log.Printf("running with token: %v\n", token)
+
+	// reminder
+	ctx := newContext()
+	startReminder(ctx)
 
 	// turing robot
 	turing = NewTuringBot(TURING_KEY, TURING_NAME)
@@ -117,7 +123,10 @@ func main() {
 					} else if strings.HasPrefix(text, "debug") {
 						responseText = text
 					} else {
-						responseText = turing.answer(text, userID)
+						id, _ := strconv.Atoi(userID)
+						if !ctx.HandleCommandText(text, id) {
+							responseText = turing.answer(text, userID)
+						}
 					}
 				}
 
@@ -151,7 +160,7 @@ func main() {
 		}
 	}()
 
-	fmt.Println("Started")
+	log.Println("Started")
 	// block here
 	<-exit
 }
