@@ -36,6 +36,9 @@ func ScanDoubanMovie(score float64, delta time.Duration) {
 			}
 			timer := time.NewTimer(time.Minute * delta)
 			<-timer.C
+		}else {
+			timer := time.NewTimer(time.Minute * 1)
+			<-timer.C
 		}
 	}
 }
