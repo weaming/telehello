@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/weaming/telehello/extension"
+	"github.com/weaming/telehello/core"
 )
 
 func GetHotMovieText(city string, score float64) ([]string, error) {
-	hotMovies, err := GetMovieInTheaters(city)
+	hotMovies, err := extension.GetMovieInTheaters(city)
 	if err != nil {
 		return nil, err
 	}
-	mvs := hotMovies.FilterSubject(func(i int, mv MovieSubject) bool {
+	mvs := hotMovies.FilterSubject(func(i int, mv extension.MovieSubject) bool {
 		return mv.Rating.Average >= score
 	})
 
@@ -26,10 +29,10 @@ func GetHotMovieText(city string, score float64) ([]string, error) {
 
 func ScanDoubanMovie(score float64, delta time.Duration) {
 	for {
-		if admin, ok := ChatsMap[AdminKey]; ok {
+		if admin, ok := core.ChatsMap[core.AdminKey]; ok {
 			txt, err := GetHotMovieText("深圳", score)
-			if !NotifiedErr(err, admin.ID) {
-				NotifyText(strings.Join(txt, "\n\n"), admin.ID)
+			if !core.NotifiedErr(err, admin.ID) {
+				core.NotifyText(strings.Join(txt, "\n\n"), admin.ID)
 			}
 			timer := time.NewTimer(time.Minute * delta)
 			<-timer.C

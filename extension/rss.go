@@ -1,4 +1,4 @@
-package main
+package extension
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mmcdole/gofeed"
+	"github.com/weaming/telehello/core"
 )
 
 const (
@@ -33,7 +34,7 @@ func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, e
 	feed, err := fp.ParseURL(url)
 	//fmt.Printf("%#v", feed)
 
-	if !NotifiedErr(err, chatID) {
+	if !core.NotifiedErr(err, chatID) {
 		var itemTextArr []string
 		// title
 		itemTextArr = append(itemTextArr, feed.Title)
@@ -42,15 +43,15 @@ func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, e
 		// check sent
 		// prepare db bucket
 		err := db.CreateBucketIfNotExists(chatID)
-		printErr(err)
+		core.PrintErr(err)
 
 		rssUpdateKey := url + updatedKey
 		updateTime, err := db.Get(chatID, rssUpdateKey)
-		fatalErr(err)
+		core.FatalErr(err)
 		sent := feed.Updated == string(updateTime)
 		defer func() {
 			err = db.Set(chatID, rssUpdateKey, feed.Updated)
-			fatalErr(err)
+			core.FatalErr(err)
 		}()
 
 		// items
@@ -81,8 +82,16 @@ func ItemParseDesc(i int, item *gofeed.Item) string {
 
 func ClearCrawlStatus() {
 	err := db.Clear()
-	fatalErr(err)
+	core.FatalErr(err)
 	init_db()
+}
+
+func NotifyAdmin(text, chatID string) {
+	if admin, ok := core.ChatsMap[core.AdminKey]; ok {
+		if chatID != admin.Destination() {
+			core.NotifyText(text, admin.Destination())
+		}
+	}
 }
 
 func ScanRSS(url, chatID string, delta time.Duration, itemFuc ItemParseFunc, daemon bool) {
@@ -90,12 +99,12 @@ outer:
 	for {
 		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, delta, daemon)
 		content, err := parseFeed(url, chatID, false, itemFuc)
-		if !NotifiedLog(err, chatID, "info") {
+		if !core.NotifailedLog(err, chatID, "info") {
 			// send rss content
-			NotifyText(content, chatID)
+			core.NotifyText(content, chatID)
 
 			// log to admin
-			if user, ok := ChatsMap[chatID]; ok {
+			if user, ok := core.ChatsMap[chatID]; ok {
 				text := fmt.Sprintf("sent %v to %v", url, user.String())
 				NotifyAdmin(text, chatID)
 			}
@@ -108,7 +117,7 @@ outer:
 				select {
 				case pair := <-deleteRssChan:
 					if pair.ChatID == chatID && pair.URL == url {
-						defer func() { NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID) }()
+						defer func() { core.NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID) }()
 						break outer
 					}
 					// else put signal back
@@ -127,17 +136,9 @@ outer:
 	}
 }
 
-func NotifyAdmin(text, chatID string) {
-	if admin, ok := ChatsMap[AdminKey]; ok {
-		if chatID != admin.Destination() {
-			NotifyText(text, admin.Destination())
-		}
-	}
-}
-
 func CloseDB() {
 	err := db.Close()
-	printErr(err)
+	core.PrintErr(err)
 }
 
 func GetOldURLs(userID string) ([]string, error) {
@@ -161,8 +162,8 @@ func AddRSS(userID, url string, delta time.Duration) error {
 	AddUser(userID)
 
 	urls, err := db.AddFieldInDB(userID, rssKey, url)
-	NotifiedErr(err, userID)
-	NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
+	core.NotifiedErr(err, userID)
+	core.NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
 	go ScanRSS(url, userID, delta, ItemParseLink, true)
@@ -171,23 +172,23 @@ func AddRSS(userID, url string, delta time.Duration) error {
 
 func DeleteRSS(userID, url string) error {
 	_, err := db.RemoveFieldInDB(userID, rssKey, url)
-	NotifiedErr(err, userID)
+	core.NotifiedErr(err, userID)
 
 	deleteRssChan <- DeleteRSSSignal{ChatID: userID, URL: url}
 	return err
 }
 
-func StartRSSCrawlers(daemon bool) {
+func StartRSSCrawlers(daemon bool, scanInterval int) {
 	for _, chatID := range GetChatIDList() {
-		CrawlForUser(chatID, daemon)
+		CrawlForUser(chatID, daemon, scanInterval)
 	}
 }
 
-func CrawlForUser(userID string, daemon bool) {
+func CrawlForUser(userID string, daemon bool, scanInterval int) {
 	urls, err := GetOldURLs(userID)
-	if !NotifiedErr(err, userID) {
+	if !core.NotifiedErr(err, userID) {
 		for _, url := range urls {
-			go ScanRSS(url, userID, time.Minute*time.Duration(scanMinutes), ItemParseLink, daemon)
+			go ScanRSS(url, userID, time.Minute*time.Duration(scanInterval), ItemParseLink, daemon)
 		}
 	}
 }
@@ -197,7 +198,7 @@ func init_db() {
 	db.CreateBucketIfNotExists(globalKey)
 }
 
-func init() {
+func Start(interval int) {
 	init_db()
-	StartRSSCrawlers(true)
+	StartRSSCrawlers(true, interval)
 }

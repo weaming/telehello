@@ -1,4 +1,4 @@
-package main
+package extension
 
 import (
 	"bytes"
@@ -11,21 +11,21 @@ import (
 
 var http_client_turing = NewHTTPClient(5)
 
-type Turing struct {
+type TuringBot struct {
 	Key  string
 	API  string
 	Name string
 }
 
-func NewTuringBot(key, name string) Turing {
-	return Turing{
+func NewTuringBot(key, name string) *TuringBot {
+	return &TuringBot{
 		Key:  key,
 		Name: name,
 		API:  "http://www.tuling123.com/openapi/api",
 	}
 }
 
-func (p *Turing) answer(content, userID string) string {
+func (p *TuringBot) Answer(content, userID string) string {
 	var rv string
 
 	var jsonStr = []byte(fmt.Sprintf(`{"key":"%v","info":"%v","userid"="%v"}`,
@@ -46,6 +46,6 @@ func (p *Turing) answer(content, userID string) string {
 	} else {
 		rv = res["text"].(string)
 	}
-	log.Printf("<< Turing bot <%v>: %v\n", resp.Status, rv)
+	log.Printf("<< TuringBot bot <%v>: %v\n", resp.Status, rv)
 	return rv
 }

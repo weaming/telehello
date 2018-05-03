@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/json"
@@ -81,10 +81,10 @@ func RunInboxService(listen string) {
 		}
 
 		jData, err := json.Marshal(data)
-		printErr(err)
+		PrintErr(err)
 		w.Write(jData)
 	})
 
 	err := http.ListenAndServe(listen, nil)
-	fatalErr(err)
+	FatalErr(err)
 }

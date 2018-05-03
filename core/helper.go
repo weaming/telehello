@@ -1,9 +1,8 @@
-package main
+package core
 
 import (
 	"errors"
 	"fmt"
-	"github.com/tucnak/telebot"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,21 +12,23 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/tucnak/telebot"
 )
 
-func fatalErr(err error) {
+func FatalErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func printErr(err error) {
+func PrintErr(err error) {
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func logMessage(msg telebot.Message) {
+func LogMessage(msg telebot.Message) {
 	log.Printf(">> from %v: %v", prettyUser(msg.Origin()), msg.Text)
 	//log.Printf("%+v", msg)
 }
@@ -43,7 +44,7 @@ func prettyTime(t time.Time) string {
 		t.Hour(), t.Minute(), t.Second())
 }
 
-func downloadTeleFile(url, fileName string) (filePath string, err error) {
+func DownloadTeleFile(url, fileName string) (filePath string, err error) {
 	// parse name
 	split := strings.SplitN(fileName, "_", 2)
 	if len(split) == 2 {
@@ -52,10 +53,10 @@ func downloadTeleFile(url, fileName string) (filePath string, err error) {
 		filePath = path.Join("/tmp", "telebot", fileName)
 	}
 
-	return downloadURL(url, filePath)
+	return DownloadURL(url, filePath)
 }
 
-func downloadURL(url, filePath string) (string, error) {
+func DownloadURL(url, filePath string) (string, error) {
 	// if not absolute
 	if !strings.HasPrefix(filePath, "/") {
 		if strings.HasPrefix(filePath, "~/") {
@@ -69,11 +70,11 @@ func downloadURL(url, filePath string) (string, error) {
 	//fmt.Println(url, filePath)
 
 	// if exist, return error
-	if exist, _ := ExistsFile(filePath); exist {
+	if exist, _ := ExistFile(filePath); exist {
 		return filePath, errors.New(fmt.Sprintf("existed '%v'", filePath))
 	}
 	// prepare directory
-	if exist, _ := ExistsFile(path.Dir(filePath)); !exist {
+	if exist, _ := ExistFile(path.Dir(filePath)); !exist {
 		err := os.MkdirAll(path.Dir(filePath), 0777)
 		if err != nil {
 			return "", err
@@ -101,7 +102,7 @@ func downloadURL(url, filePath string) (string, error) {
 	}
 }
 
-func ExistsFile(path string) (bool, error) {
+func ExistFile(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -112,7 +113,7 @@ func ExistsFile(path string) (bool, error) {
 	return true, err
 }
 
-func maxFileSize(files []telebot.Thumbnail) (f telebot.Thumbnail, err error) {
+func MaxFileSize(files []telebot.Thumbnail) (f telebot.Thumbnail, err error) {
 	l := len(files)
 	if l == 0 {
 		return f, errors.New("no files")
@@ -127,7 +128,7 @@ func maxFileSize(files []telebot.Thumbnail) (f telebot.Thumbnail, err error) {
 	return
 }
 
-func extendStringList(a, b []string) []string {
+func ExtendStringList(a, b []string) []string {
 	for _, x := range b {
 		a = append(a, x)
 	}

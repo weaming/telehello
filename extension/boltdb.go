@@ -1,13 +1,15 @@
-package main
+package extension
 
 import (
 	"fmt"
-	"github.com/boltdb/bolt"
-	"gopkg.in/fatih/set.v0"
 	"log"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/weaming/telehello/core"
+	"gopkg.in/fatih/set.v0"
 )
 
 type BoltConnection struct {
@@ -15,14 +17,14 @@ type BoltConnection struct {
 }
 
 func NewDB(path string) *BoltConnection {
-	if ok, _ := ExistsFile(path); !ok {
+	if ok, _ := core.ExistFile(path); !ok {
 		fd, err := os.Create(path)
-		fatalErr(err)
+		core.FatalErr(err)
 		fd.Close()
 		fmt.Println("created database file", path)
 	}
 	db, err := bolt.Open(path, 0666, &bolt.Options{Timeout: 2 * time.Second})
-	fatalErr(err)
+	core.FatalErr(err)
 	return &BoltConnection{db: db}
 }
 

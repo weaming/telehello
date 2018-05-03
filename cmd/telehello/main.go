@@ -3,12 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/tucnak/telebot"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tucnak/telebot"
+	"github.com/weaming/telehello/core"
+	"github.com/weaming/telehello/extension"
 )
 
 const (
@@ -16,7 +19,7 @@ const (
 	TURING_NAME = "小Q"
 )
 
-var turing Turing
+var turing *extension.TuringBot
 var listen string
 var period int64 = 30
 var resetdb bool
@@ -43,30 +46,27 @@ func main() {
 		token = "337645430:AAFQcjIk1bBffl5x1O1T-A9ZvAliCOreTCo"
 	}
 	bot, err := telebot.NewBot(token)
-	fatalErr(err)
+	core.FatalErr(err)
 	log.Printf("running with token: %v\n", token)
 
 	// turing robot
-	turing = NewTuringBot(TURING_KEY, TURING_NAME)
+	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
 
 	messages := make(chan telebot.Message, 100)
 	bot.Listen(messages, time.Duration(period)*time.Second)
 
-	// block chan
-	exit := make(chan bool)
-
 	// notify from TelegramNotificationBox
-	go RunInboxService(listen)
+	go core.RunInboxService(listen)
 	go func() {
-		PollInbox(bot, TelegramNotificationBox)
+		core.PollInbox(bot, core.TelegramNotificationBox)
 	}()
 
 	// scan RSS feeds
 	if resetdb {
 		// delete db file
-		ClearCrawlStatus()
+		extension.ClearCrawlStatus()
 	}
-	defer CloseDB()
+	defer extension.CloseDB()
 
 	// douban host movie
 	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
@@ -76,7 +76,7 @@ func main() {
 		for message := range messages {
 			// run in separate goroutine
 			go func(message telebot.Message) {
-				logMessage(message)
+				core.LogMessage(message)
 
 				// prepare common
 				userID := strconv.Itoa(message.Origin().ID)
@@ -84,23 +84,23 @@ func main() {
 				text := message.Text
 
 				// check if new user first
-				if _, ok := ChatsMap[userID]; !ok {
-					AddUser(userID)
+				if _, ok := core.ChatsMap[userID]; !ok {
+					extension.AddUser(userID)
 
-					if root, ok2 := ChatsMap[AdminKey]; ok2 {
+					if root, ok2 := core.ChatsMap[core.AdminKey]; ok2 {
 						// send log to admin
-						NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
+						core.NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
 					}
 					if userName == adminTelegramID {
 						// crawl defaults RSSes for weaming
 						GoBuiltinRSS(userID)
 						// update chat id with myself
-						ChatsMap[AdminKey] = &ChatUser{TeleName: userName, ID: userID}
+						core.ChatsMap[core.AdminKey] = &core.ChatUser{TeleName: userName, ID: userID}
 					}
 				}
 
 				// register/update user
-				ChatsMap[userID] = &ChatUser{TeleName: userName, ID: userID}
+				core.ChatsMap[userID] = &core.ChatUser{TeleName: userName, ID: userID}
 
 				// process text
 				var responseText string
@@ -110,14 +110,14 @@ func main() {
 				}
 
 				if text[0] == '/' {
-					responseText = processCommand(text, userID, userName)
+					responseText = extension.ProcessCommand(text, userID, userName, turing, scanMinutes)
 				} else {
 					if message.Text == "hi" {
 						responseText = "Hello, " + message.Sender.FirstName + "!"
 					} else if strings.HasPrefix(text, "debug") {
 						responseText = text
 					} else {
-						responseText = turing.answer(text, userID)
+						responseText = turing.Answer(text, userID)
 					}
 				}
 
@@ -125,14 +125,14 @@ func main() {
 				if len(message.Photo) > 0 {
 					var logs []string
 					// only the largest file
-					thumbnail, err := maxFileSize(message.Photo)
+					thumbnail, err := core.MaxFileSize(message.Photo)
 
 					// for loop on photos
 					if err != nil {
 						responseText = err.Error()
 					} else {
 						url, _ := bot.GetFileDirectURL(thumbnail.FileID)
-						filePath, err := downloadTeleFile(url, thumbnail.FileID+".jpg")
+						filePath, err := core.DownloadTeleFile(url, thumbnail.FileID+".jpg")
 						if err != nil {
 							log.Println(err)
 							logs = append(logs, err.Error())
@@ -153,5 +153,6 @@ func main() {
 
 	fmt.Println("Started")
 	// block here
+	exit := make(chan bool)
 	<-exit
 }

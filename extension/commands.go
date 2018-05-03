@@ -1,12 +1,13 @@
-package main
+package extension
 
 import (
 	"fmt"
 	"strings"
 	"time"
+	"github.com/weaming/telehello/core"
 )
 
-func processCommand(text, userID, userName string) string {
+func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinutes int) string {
 	var cmd, body string
 	split := strings.SplitN(text, " ", 2)
 	l := len(split)
@@ -35,25 +36,25 @@ func processCommand(text, userID, userName string) string {
 		}, "\n")
 
 	} else if cmd == "status" {
-		return ShellCommand("sudo supervisorctl status")
+		return core.ShellCommand("sudo supervisorctl status")
 	} else if cmd == "storage" {
-		return ShellCommand("sudo df -h")
+		return core.ShellCommand("sudo df -h")
 	} else if cmd == "uptime" {
-		return ShellCommand("uptime")
+		return core.ShellCommand("uptime")
 
 	} else if cmd == "debug" {
-		return ChatsMap[userID].String()
+		return core.ChatsMap[userID].String()
 	} else if cmd == "weather" {
-		return turing.answer("查天气 "+body, userID)
+		return turing.Answer("查天气 "+body, userID)
 	} else if cmd == "users" {
-		if admin, ok := ChatsMap[AdminKey]; ok {
+		if admin, ok := core.ChatsMap[core.AdminKey]; ok {
 			if userID == admin.ID {
 				chats := []string{"New users since last starting running:"}
-				for _, chat := range ChatsMap {
+				for _, chat := range core.ChatsMap {
 					chats = append(chats, fmt.Sprintf("%v(%v)", chat.TeleName, chat.ID))
 				}
 				chats = append(chats, "Chats IDs in DB:")
-				chats = extendStringList(chats, GetChatIDList())
+				chats = core.ExtendStringList(chats, GetChatIDList())
 				return strings.Join(chats, "\n")
 			}
 		}
@@ -63,21 +64,21 @@ func processCommand(text, userID, userName string) string {
 			urls := strings.Fields(body)
 			for _, u := range urls {
 				err := AddRSS(userID, u, time.Minute*time.Duration(scanMinutes))
-				NotifiedErr(err, userID)
+				core.NotifiedErr(err, userID)
 			}
 			return "received rss:\n" + strings.Join(urls, "\n")
 		} else {
 			return "未给出RSS URL"
 		}
 	} else if cmd == "forcerss" {
-		CrawlForUser(userID, false)
+		CrawlForUser(userID, false, scanMinutes)
 		return "force crawled your RSSes"
 	} else if cmd == "delrss" {
 		if l == 2 {
 			urls := strings.Fields(body)
 			for _, u := range urls {
 				err := DeleteRSS(userID, u)
-				NotifiedErr(err, userID)
+				core.NotifiedErr(err, userID)
 			}
 			return "deleted rss:\n" + strings.Join(urls, "\n")
 		} else {

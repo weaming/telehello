@@ -1,6 +1,6 @@
 ## Install
 
-    go get -u github.com/weaming/telehello
+    go get -u github.com/weaming/telehello/cmd/telehello
 
 ## Usage
 

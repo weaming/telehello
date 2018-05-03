@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/mmcdole/gofeed"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/mmcdole/gofeed"
+	"github.com/weaming/telehello/extension"
 )
 
 const (
@@ -35,7 +37,7 @@ func ItemParseWanquDaily(i int, item *gofeed.Item) string {
 }
 
 func GoBuiltinRSS(id string) {
-	go ScanRSS(RSS_WANQU, id, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily, true)
-	go ScanRSS(RSS_HACKMIND, id, time.Minute*time.Duration(scanMinutes), ItemParseLink, true)
+	go extension.ScanRSS(RSS_WANQU, id, time.Minute*time.Duration(scanMinutes), ItemParseWanquDaily, true)
+	go extension.ScanRSS(RSS_HACKMIND, id, time.Minute*time.Duration(scanMinutes), extension.ItemParseLink, true)
 	//go ScanRSS(RSS_RUANYIFENG, time.Minute*time.Duration(scanMinutes), ItemParseLink)
 }

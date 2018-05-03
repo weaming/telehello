@@ -59,13 +59,13 @@ func PollInbox(bot *telebot.Bot, inbox chan Boxer) {
 	var err error
 	for msg := range inbox {
 		charID := msg.Destination()
-		if fn, exist := notifyFuncMap[msg.Type]; exist {
+		if fn, exist := notifyFuncMap[msg.Type()]; exist {
 			err = fn(bot, msg.Message(), ChatUser{ID: charID})
 		} else {
 			fn := notifyFuncMap["default"]
 			err = fn(bot, msg.Message(), ChatUser{ID: charID})
 		}
-		printErr(err)
+		PrintErr(err)
 	}
 }
 
