@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/mmcdole/gofeed"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/mmcdole/gofeed"
 )
 
 const (
@@ -23,10 +24,11 @@ var db *BoltConnection
 type DeleteRSSSignal struct {
 	ChatID, URL string
 }
+type ItemParseFunc func(int, *gofeed.Item) string
 
 var deleteRssChan = make(chan DeleteRSSSignal, 100)
 
-func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) string) (string, error) {
+func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	//fmt.Printf("%#v", feed)
@@ -43,9 +45,9 @@ func parseFeed(url, chatID string, html bool, itemFunc func(int, *gofeed.Item) s
 		printErr(err)
 
 		rssUpdateKey := url + updatedKey
-		updatedValue, err := db.Get(chatID, rssUpdateKey)
+		updateTime, err := db.Get(chatID, rssUpdateKey)
 		fatalErr(err)
-		sent := feed.Updated == string(updatedValue)
+		sent := feed.Updated == string(updateTime)
 		defer func() {
 			err = db.Set(chatID, rssUpdateKey, feed.Updated)
 			fatalErr(err)
@@ -83,7 +85,7 @@ func ClearCrawlStatus() {
 	init_db()
 }
 
-func ScanRSS(url, chatID string, delta time.Duration, itemFuc func(int, *gofeed.Item) string, daemon bool) {
+func ScanRSS(url, chatID string, delta time.Duration, itemFuc ItemParseFunc, daemon bool) {
 outer:
 	for {
 		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, delta, daemon)
