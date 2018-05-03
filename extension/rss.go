@@ -21,8 +21,8 @@ const (
 )
 
 type RSSPool struct {
-	db *BoltConnection
-	delCh chan DeleteRSSSignal
+	db       *BoltConnection
+	delCh    chan DeleteRSSSignal
 	interval time.Duration
 }
 
@@ -32,11 +32,11 @@ type DeleteRSSSignal struct {
 
 type ItemParseFunc func(int, *gofeed.Item) string
 
-func NewRSSPool (interval int,  resetdb bool) *RSSPool {
+func NewRSSPool(interval time.Duration, resetdb bool) *RSSPool {
 	p := RSSPool{
-		db:NewDB(dbname),
-		delCh:make(chan DeleteRSSSignal, 100),
-		interval: time.Duration(interval),
+		db:       NewDB(dbname),
+		delCh:    make(chan DeleteRSSSignal, 100),
+		interval: interval,
 	}
 	if resetdb {
 		p.ClearCrawlStatus()
@@ -93,7 +93,6 @@ func (p *RSSPool) ClearCrawlStatus() {
 	core.FatalErr(err)
 }
 
-
 func ItemParseLink(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, item.Link)
 }
@@ -102,7 +101,7 @@ func ItemParseDesc(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, item.Description)
 }
 
-func (p *RSSPool)ScanRSS(url, chatID string,  itemFuc ItemParseFunc, daemon bool) {
+func (p *RSSPool) ScanRSS(url, chatID string, itemFuc ItemParseFunc, daemon bool) {
 outer:
 	for {
 		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, p.interval, daemon)
@@ -133,8 +132,6 @@ outer:
 				case <-timer.C:
 					// timeout, then crawl for next time
 					break waitDelete
-				default:
-					// do nothing
 				}
 			}
 		} else {
@@ -144,21 +141,21 @@ outer:
 	}
 }
 
-func (p *RSSPool)CloseDB() {
+func (p *RSSPool) CloseDB() {
 	err := p.db.Close()
 	core.PrintErr(err)
 }
 
-func (p *RSSPool)GetOldURLs(userID string) ([]string, error) {
+func (p *RSSPool) GetOldURLs(userID string) ([]string, error) {
 	return p.db.GetFieldsInDB(userID, rssKey)
 }
 
-func (p *RSSPool)GetChatIDList() []string {
+func (p *RSSPool) GetChatIDList() []string {
 	chats, _ := p.db.GetFieldsInDB(globalKey, chatListKey)
 	return chats
 }
 
-func (p *RSSPool)AddUser(id string) {
+func (p *RSSPool) AddUser(id string) {
 	// add userID to list in DB
 	_, err := p.db.AddFieldInDB(globalKey, chatListKey, id)
 	if err != nil {
@@ -166,7 +163,7 @@ func (p *RSSPool)AddUser(id string) {
 	}
 }
 
-func (p *RSSPool)AddRSS(userID, url string) error {
+func (p *RSSPool) AddRSS(userID, url string) error {
 	p.AddUser(userID)
 
 	urls, err := p.db.AddFieldInDB(userID, rssKey, url)
@@ -178,7 +175,7 @@ func (p *RSSPool)AddRSS(userID, url string) error {
 	return nil
 }
 
-func (p *RSSPool)DeleteRSS(userID, url string) error {
+func (p *RSSPool) DeleteRSS(userID, url string) error {
 	_, err := p.db.RemoveFieldInDB(userID, rssKey, url)
 	core.NotifiedErr(err, userID)
 
@@ -186,17 +183,17 @@ func (p *RSSPool)DeleteRSS(userID, url string) error {
 	return err
 }
 
-func (p *RSSPool)LoopOnExistedUsers(daemon bool) {
+func (p *RSSPool) LoopOnExistedUsers(daemon bool) {
 	for _, chatID := range p.GetChatIDList() {
 		p.CrawlForUser(chatID, daemon)
 	}
 }
 
-func (p *RSSPool)CrawlForUser(userID string, daemon bool) {
+func (p *RSSPool) CrawlForUser(userID string, daemon bool) {
 	urls, err := p.GetOldURLs(userID)
 	if !core.NotifiedErr(err, userID) {
 		for _, url := range urls {
-			go p.ScanRSS(url, userID,  ItemParseLink, daemon)
+			go p.ScanRSS(url, userID, ItemParseLink, daemon)
 		}
 	}
 }

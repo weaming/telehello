@@ -11,4 +11,3 @@ func Start(bot *telebot.Bot, listen string) {
 		PollInbox(bot, TelegramNotificationBox)
 	}()
 }
-

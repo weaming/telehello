@@ -2,8 +2,8 @@ package extension
 
 import (
 	"fmt"
-	"strings"
 	"github.com/weaming/telehello/core"
+	"strings"
 )
 
 func ProcessCommand(text, userID string, rss *RSSPool, turing *TuringBot) string {

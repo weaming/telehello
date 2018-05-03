@@ -40,10 +40,12 @@ func init() {
 	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
 
+	interval := time.Minute * time.Duration(scanMinutes)
+
 	// turing robot
 	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
 	// RSS
-	rss = extension.NewRSSPool(scanMinutes, resetdb)
+	rss = extension.NewRSSPool(interval, resetdb)
 	rss.Start()
 	// douban host movie
 	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
