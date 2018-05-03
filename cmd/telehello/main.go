@@ -27,6 +27,8 @@ var scanMinutes int = 60 * 24
 var doubanScore float64
 var adminTelegramID = "weaming"
 
+var rss *extension.RSSPool
+
 func init() {
 	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\t4. 执行服务器脚本\n\n")
 	// parse args
@@ -41,7 +43,8 @@ func init() {
 	// turing robot
 	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
 	// RSS
-	extension.StartRSS(scanMinutes, resetdb)
+	rss = extension.NewRSSPool(scanMinutes, resetdb)
+	rss.Start()
 	// douban host movie
 	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
 }
@@ -74,7 +77,7 @@ func main() {
 
 				// check if new user first
 				if _, ok := core.ChatsMap[userID]; !ok {
-					extension.AddUser(userID)
+					rss.AddUser(userID)
 
 					if root, ok2 := core.ChatsMap[core.AdminKey]; ok2 {
 						// send log to admin
@@ -82,7 +85,7 @@ func main() {
 					}
 					if userName == adminTelegramID {
 						// crawl defaults RSSes for weaming
-						GoBuiltinRSS(userID)
+						GoBuiltinRSS(rss, userID)
 						// update chat id with myself
 						core.ChatsMap[core.AdminKey] = &core.ChatUser{TeleName: userName, ID: userID}
 					}
@@ -99,7 +102,7 @@ func main() {
 				}
 
 				if text[0] == '/' {
-					responseText = extension.ProcessCommand(text, userID, userName, turing, scanMinutes)
+					responseText = extension.ProcessCommand(text, userID, rss, turing)
 				} else {
 					if message.Text == "hi" {
 						responseText = "Hello, " + message.Sender.FirstName + "!"

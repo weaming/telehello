@@ -3,11 +3,10 @@ package extension
 import (
 	"fmt"
 	"strings"
-	"time"
 	"github.com/weaming/telehello/core"
 )
 
-func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinutes int) string {
+func ProcessCommand(text, userID string, rss *RSSPool, turing *TuringBot) string {
 	var cmd, body string
 	split := strings.SplitN(text, " ", 2)
 	l := len(split)
@@ -54,7 +53,7 @@ func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinute
 					chats = append(chats, fmt.Sprintf("%v(%v)", chat.TeleName, chat.ID))
 				}
 				chats = append(chats, "Chats IDs in DB:")
-				chats = core.ExtendStringList(chats, GetChatIDList())
+				chats = core.ExtendStringList(chats, rss.GetChatIDList())
 				return strings.Join(chats, "\n")
 			}
 		}
@@ -63,7 +62,7 @@ func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinute
 		if l == 2 {
 			urls := strings.Fields(body)
 			for _, u := range urls {
-				err := AddRSS(userID, u, time.Minute*time.Duration(scanMinutes))
+				err := rss.AddRSS(userID, u)
 				core.NotifiedErr(err, userID)
 			}
 			return "received rss:\n" + strings.Join(urls, "\n")
@@ -71,13 +70,13 @@ func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinute
 			return "未给出RSS URL"
 		}
 	} else if cmd == "forcerss" {
-		CrawlForUser(userID, false, scanMinutes)
+		rss.CrawlForUser(userID, false)
 		return "force crawled your RSSes"
 	} else if cmd == "delrss" {
 		if l == 2 {
 			urls := strings.Fields(body)
 			for _, u := range urls {
-				err := DeleteRSS(userID, u)
+				err := rss.DeleteRSS(userID, u)
 				core.NotifiedErr(err, userID)
 			}
 			return "deleted rss:\n" + strings.Join(urls, "\n")
@@ -85,7 +84,7 @@ func ProcessCommand(text, userID, userName string, turing *TuringBot, scanMinute
 			return "未给出RSS URL"
 		}
 	} else if cmd == "listrss" {
-		urls, err := GetOldURLs(userID)
+		urls, err := rss.GetOldURLs(userID)
 		if err != nil {
 			return "error getting RSS: " + err.Error()
 		}

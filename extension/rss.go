@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DBName     = "telebot.db"
+	dbname     = "telebot.db"
 	updatedKey = "updatedDate"
 	rssKey     = "RSS"
 	// store global meta information, such as users list, rather than user individual info
@@ -20,7 +20,11 @@ const (
 	chatListKey = "chats_list"
 )
 
-var db *BoltConnection
+type RSSPool struct {
+	db *BoltConnection
+	delCh chan DeleteRSSSignal
+	interval time.Duration
+}
 
 type DeleteRSSSignal struct {
 	ChatID, URL string
@@ -28,9 +32,20 @@ type DeleteRSSSignal struct {
 
 type ItemParseFunc func(int, *gofeed.Item) string
 
-var deleteRssChan = make(chan DeleteRSSSignal, 100)
+func NewRSSPool (interval int,  resetdb bool) *RSSPool {
+	p := RSSPool{
+		db:NewDB(dbname),
+		delCh:make(chan DeleteRSSSignal, 100),
+		interval: time.Duration(interval),
+	}
+	if resetdb {
+		p.ClearCrawlStatus()
+	}
+	p.db.CreateBucketIfNotExists(globalKey)
+	return &p
+}
 
-func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, error) {
+func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
 	//fmt.Printf("%#v", feed)
@@ -43,15 +58,15 @@ func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, e
 
 		// check sent
 		// prepare db bucket
-		err := db.CreateBucketIfNotExists(chatID)
+		err := p.db.CreateBucketIfNotExists(chatID)
 		core.PrintErr(err)
 
 		rssUpdateKey := url + updatedKey
-		updateTime, err := db.Get(chatID, rssUpdateKey)
+		updateTime, err := p.db.Get(chatID, rssUpdateKey)
 		core.FatalErr(err)
 		sent := feed.Updated == string(updateTime)
 		defer func() {
-			err = db.Set(chatID, rssUpdateKey, feed.Updated)
+			err = p.db.Set(chatID, rssUpdateKey, feed.Updated)
 			core.FatalErr(err)
 		}()
 
@@ -73,6 +88,12 @@ func parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, e
 	return "", errors.New(fmt.Sprintf("error during crawling %v: %v", url, err))
 }
 
+func (p *RSSPool) ClearCrawlStatus() {
+	err := p.db.Clear()
+	core.FatalErr(err)
+}
+
+
 func ItemParseLink(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, item.Link)
 }
@@ -81,48 +102,34 @@ func ItemParseDesc(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, item.Description)
 }
 
-func ClearCrawlStatus() {
-	err := db.Clear()
-	core.FatalErr(err)
-	init_db()
-}
-
-func NotifyAdmin(text, chatID string) {
-	if admin, ok := core.ChatsMap[core.AdminKey]; ok {
-		if chatID != admin.Destination() {
-			core.NotifyText(text, admin.Destination())
-		}
-	}
-}
-
-func ScanRSS(url, chatID string, delta time.Duration, itemFuc ItemParseFunc, daemon bool) {
+func (p *RSSPool)ScanRSS(url, chatID string,  itemFuc ItemParseFunc, daemon bool) {
 outer:
 	for {
-		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, delta, daemon)
-		content, err := parseFeed(url, chatID, false, itemFuc)
-		if !core.NotifailedLog(err, chatID, "info") {
+		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, p.interval, daemon)
+		content, err := p.parseFeed(url, chatID, false, itemFuc)
+		if !core.NotifiedLog(err, chatID, "info") {
 			// send rss content
 			core.NotifyText(content, chatID)
 
 			// log to admin
 			if user, ok := core.ChatsMap[chatID]; ok {
 				text := fmt.Sprintf("sent %v to %v", url, user.String())
-				NotifyAdmin(text, chatID)
+				core.NotifyAdmin(text, chatID)
 			}
 		}
 
 		if daemon {
-			timer := time.NewTimer(delta)
+			timer := time.NewTimer(p.interval)
 		waitDelete:
 			for {
 				select {
-				case pair := <-deleteRssChan:
+				case pair := <-p.delCh:
 					if pair.ChatID == chatID && pair.URL == url {
 						defer func() { core.NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID) }()
 						break outer
 					}
 					// else put signal back
-					deleteRssChan <- pair
+					p.delCh <- pair
 				case <-timer.C:
 					// timeout, then crawl for next time
 					break waitDelete
@@ -137,72 +144,63 @@ outer:
 	}
 }
 
-func CloseDB() {
-	err := db.Close()
+func (p *RSSPool)CloseDB() {
+	err := p.db.Close()
 	core.PrintErr(err)
 }
 
-func GetOldURLs(userID string) ([]string, error) {
-	return db.GetFieldsInDB(userID, rssKey)
+func (p *RSSPool)GetOldURLs(userID string) ([]string, error) {
+	return p.db.GetFieldsInDB(userID, rssKey)
 }
 
-func GetChatIDList() []string {
-	chats, _ := db.GetFieldsInDB(globalKey, chatListKey)
+func (p *RSSPool)GetChatIDList() []string {
+	chats, _ := p.db.GetFieldsInDB(globalKey, chatListKey)
 	return chats
 }
 
-func AddUser(id string) {
+func (p *RSSPool)AddUser(id string) {
 	// add userID to list in DB
-	_, err := db.AddFieldInDB(globalKey, chatListKey, id)
+	_, err := p.db.AddFieldInDB(globalKey, chatListKey, id)
 	if err != nil {
-		NotifyAdmin(err.Error(), id)
+		core.NotifyAdmin(err.Error(), id)
 	}
 }
 
-func AddRSS(userID, url string, delta time.Duration) error {
-	AddUser(userID)
+func (p *RSSPool)AddRSS(userID, url string) error {
+	p.AddUser(userID)
 
-	urls, err := db.AddFieldInDB(userID, rssKey, url)
+	urls, err := p.db.AddFieldInDB(userID, rssKey, url)
 	core.NotifiedErr(err, userID)
 	core.NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
-	go ScanRSS(url, userID, delta, ItemParseLink, true)
+	go p.ScanRSS(url, userID, ItemParseLink, true)
 	return nil
 }
 
-func DeleteRSS(userID, url string) error {
-	_, err := db.RemoveFieldInDB(userID, rssKey, url)
+func (p *RSSPool)DeleteRSS(userID, url string) error {
+	_, err := p.db.RemoveFieldInDB(userID, rssKey, url)
 	core.NotifiedErr(err, userID)
 
-	deleteRssChan <- DeleteRSSSignal{ChatID: userID, URL: url}
+	p.delCh <- DeleteRSSSignal{ChatID: userID, URL: url}
 	return err
 }
 
-func loopOnExistedUsers(daemon bool, scanInterval int) {
-	for _, chatID := range GetChatIDList() {
-		CrawlForUser(chatID, daemon, scanInterval)
+func (p *RSSPool)LoopOnExistedUsers(daemon bool) {
+	for _, chatID := range p.GetChatIDList() {
+		p.CrawlForUser(chatID, daemon)
 	}
 }
 
-func CrawlForUser(userID string, daemon bool, scanInterval int) {
-	urls, err := GetOldURLs(userID)
+func (p *RSSPool)CrawlForUser(userID string, daemon bool) {
+	urls, err := p.GetOldURLs(userID)
 	if !core.NotifiedErr(err, userID) {
 		for _, url := range urls {
-			go ScanRSS(url, userID, time.Minute*time.Duration(scanInterval), ItemParseLink, daemon)
+			go p.ScanRSS(url, userID,  ItemParseLink, daemon)
 		}
 	}
 }
 
-func init_db() {
-	db = NewDB(DBName)
-	db.CreateBucketIfNotExists(globalKey)
-}
-
-func StartRSS(interval int, resetdb bool) {
-	init_db()
-	if resetdb {
-		ClearCrawlStatus()
-	}
-	loopOnExistedUsers(true, interval)
+func (p *RSSPool) Start() {
+	p.LoopOnExistedUsers(true)
 }

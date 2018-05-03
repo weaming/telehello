@@ -8,7 +8,7 @@ import (
 	"github.com/tucnak/telebot"
 )
 
-var TelegramNotificationBox = make(chan Boxer, 1000)
+var TelegramNotificationBox = make(chan InboxMessage, 1000)
 var ChatsMap = make(map[string]*ChatUser)
 var AdminKey = "admin"
 
@@ -49,13 +49,13 @@ var notifyFuncMap = map[string]Notifier{
 	"HTML":    notifyHTML,
 }
 
-type Boxer interface {
+type InboxMessage interface {
 	Message() string
 	Type() string
 	Destination() string
 }
 
-func PollInbox(bot *telebot.Bot, inbox chan Boxer) {
+func PollInbox(bot *telebot.Bot, inbox chan InboxMessage) {
 	var err error
 	for msg := range inbox {
 		charID := msg.Destination()
@@ -77,7 +77,7 @@ func NotifyHTML(text, chatID string) {
 	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML"}
 }
 
-func NotifailedLog(err error, chatID, level string) bool {
+func NotifiedLog(err error, chatID, level string) bool {
 	if err != nil {
 		NotifyText(fmt.Sprintf("%v: %v", level, err.Error()), chatID)
 		// if is error, return true
@@ -86,5 +86,14 @@ func NotifailedLog(err error, chatID, level string) bool {
 	return false
 }
 func NotifiedErr(err error, chatID string) bool {
-	return NotifailedLog(err, chatID, "error")
+	return NotifiedLog(err, chatID, "error")
 }
+
+func NotifyAdmin(text, chatID string) {
+	if admin, ok := ChatsMap[AdminKey]; ok {
+		if chatID != admin.Destination() {
+			NotifyText(text, admin.Destination())
+		}
+	}
+}
+
