@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/weaming/telehello/extension"
 	"github.com/weaming/telehello/core"
+	"github.com/weaming/telehello/extension"
 )
 
 func GetHotMovieText(city string, score float64) ([]string, error) {

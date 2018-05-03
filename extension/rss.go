@@ -25,6 +25,7 @@ var db *BoltConnection
 type DeleteRSSSignal struct {
 	ChatID, URL string
 }
+
 type ItemParseFunc func(int, *gofeed.Item) string
 
 var deleteRssChan = make(chan DeleteRSSSignal, 100)
@@ -178,7 +179,7 @@ func DeleteRSS(userID, url string) error {
 	return err
 }
 
-func StartRSSCrawlers(daemon bool, scanInterval int) {
+func loopOnExistedUsers(daemon bool, scanInterval int) {
 	for _, chatID := range GetChatIDList() {
 		CrawlForUser(chatID, daemon, scanInterval)
 	}
@@ -198,7 +199,10 @@ func init_db() {
 	db.CreateBucketIfNotExists(globalKey)
 }
 
-func Start(interval int) {
+func StartRSS(interval int, resetdb bool) {
 	init_db()
-	StartRSSCrawlers(true, interval)
+	if resetdb {
+		ClearCrawlStatus()
+	}
+	loopOnExistedUsers(true, interval)
 }

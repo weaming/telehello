@@ -37,6 +37,13 @@ func init() {
 	flag.IntVar(&scanMinutes, "rss", 60*24, "period of crawling wanqu.co RSS in minutes")
 	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
+
+	// turing robot
+	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
+	// RSS
+	extension.StartRSS(scanMinutes, resetdb)
+	// douban host movie
+	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
 }
 
 func main() {
@@ -49,27 +56,9 @@ func main() {
 	core.FatalErr(err)
 	log.Printf("running with token: %v\n", token)
 
-	// turing robot
-	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
-
 	messages := make(chan telebot.Message, 100)
 	bot.Listen(messages, time.Duration(period)*time.Second)
-
-	// notify from TelegramNotificationBox
-	go core.RunInboxService(listen)
-	go func() {
-		core.PollInbox(bot, core.TelegramNotificationBox)
-	}()
-
-	// scan RSS feeds
-	if resetdb {
-		// delete db file
-		extension.ClearCrawlStatus()
-	}
-	defer extension.CloseDB()
-
-	// douban host movie
-	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
+	core.Start(bot, listen)
 
 	// handler received msg from app
 	go func() {
@@ -152,7 +141,6 @@ func main() {
 	}()
 
 	fmt.Println("Started")
-	// block here
 	exit := make(chan bool)
 	<-exit
 }
