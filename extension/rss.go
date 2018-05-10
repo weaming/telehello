@@ -18,6 +18,7 @@ const (
 	// store global meta information, such as users list, rather than user individual info
 	globalKey   = "global"
 	chatListKey = "chats_list"
+	but         = "but don't have any update"
 )
 
 type RSSPool struct {
@@ -81,7 +82,9 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 		//fmt.Println(content)
 
 		if sent {
-			log.Printf("crawled %v, but don't have any update\n", url)
+			msg := fmt.Sprintf("crawled %v, %v\n", url, but)
+			log.Println(msg)
+			return content, errors.New(msg)
 		}
 		return content, nil
 	}
@@ -106,7 +109,11 @@ outer:
 	for {
 		log.Printf("crawl rss, url:%v id:%v delta:%v daemon:%v\n", url, chatID, p.interval, daemon)
 		content, err := p.parseFeed(url, chatID, false, itemFuc)
-		if !core.NotifiedLog(err, chatID, "info") {
+		if err != nil {
+			if !strings.Contains(err.Error(), but) {
+				core.NotifiedLog(err, chatID, "info")
+			}
+		} else {
 			// send rss content
 			core.NotifyText(content, chatID)
 
