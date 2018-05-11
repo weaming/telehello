@@ -2,8 +2,9 @@ package extension
 
 import (
 	"fmt"
-	"github.com/weaming/telehello/core"
 	"strings"
+
+	"github.com/weaming/telehello/core"
 )
 
 type CommandHandler func(body string, params *HandlerParameter) string
@@ -23,7 +24,7 @@ var handlerMap = map[string]CommandHandler{
 	"debug":    debugHandler,
 	"weather":  weatherHandler,
 	"users":    usersHandler,
-	"address":  addrssHandler,
+	"addrss":   addrssHandler,
 	"forcerss": forcerssHandler,
 	"delrss":   delrssHandler,
 	"listrss":  listrssHandler,
