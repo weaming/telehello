@@ -28,15 +28,20 @@ func GetHotMovieText(city string, score float64) ([]string, error) {
 }
 
 func ScanDoubanMovie(score float64, delta time.Duration) {
+	last := ""
 	for {
 		if admin, ok := core.ChatsMap[core.AdminKey]; ok {
-			txt, err := GetHotMovieText("深圳", score)
+			textList, err := GetHotMovieText("深圳", score)
 			if !core.NotifiedErr(err, admin.ID) {
-				core.NotifyText(strings.Join(txt, "\n\n"), admin.ID)
+				text := strings.Join(textList, "\n\n")
+				if text != last {
+					core.NotifyText(text, admin.ID)
+					last = text
+				}
 			}
 			timer := time.NewTimer(time.Minute * delta)
 			<-timer.C
-		}else {
+		} else {
 			timer := time.NewTimer(time.Minute * 1)
 			<-timer.C
 		}
