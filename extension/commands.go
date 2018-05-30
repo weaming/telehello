@@ -3,6 +3,7 @@ package extension
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/weaming/telehello/core"
 )
@@ -28,6 +29,7 @@ var handlerMap = map[string]CommandHandler{
 	"forcerss": forcerssHandler,
 	"delrss":   delrssHandler,
 	"listrss":  listrssHandler,
+	"remind":   remindHandler,
 }
 
 func ProcessCommand(text, userID string, rss *RSSPool, turing *TuringBot) string {
@@ -147,4 +149,19 @@ func listrssHandler(body string, params *HandlerParameter) string {
 		return "haven't received any additional RSS"
 	}
 	return "received rss:\n" + strings.Join(urls, "\n")
+}
+
+func remindHandler(body string, params *HandlerParameter) string {
+	result, err := ParseHuman(body, "shenzhen")
+	if err != nil {
+		return err.Error()
+	}
+
+	go func() {
+		t := time.NewTimer(time.Until(result.Time))
+		<-t.C
+		core.NotifyText(body, params.UserID)
+	}()
+
+	return fmt.Sprintf("I will remind you at %v: %v\n", result.Time, result.Source)
 }
