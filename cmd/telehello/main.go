@@ -30,7 +30,7 @@ var adminTelegramID = "weaming"
 var rss *extension.RSSPool
 
 func init() {
-	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\t4. 执行服务器脚本\n\n")
+	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\n")
 	// parse args
 	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
 	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook to receive message")

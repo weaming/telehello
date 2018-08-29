@@ -97,7 +97,7 @@ func (p *RSSPool) ClearCrawlStatus() {
 }
 
 func ItemParseLink(i int, item *gofeed.Item) string {
-	return fmt.Sprintf("%d %v:\n%v", i+1, strings.TrimSpace(item.Title), strings.TrimSpace(item.Link))
+	return fmt.Sprintf("%d %v\n%v", i+1, strings.TrimSpace(item.Title), strings.TrimSpace(item.Link))
 }
 
 func ItemParseDesc(i int, item *gofeed.Item) string {
