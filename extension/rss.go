@@ -175,7 +175,7 @@ func (p *RSSPool) AddRSS(userID, url string) error {
 
 	urls, err := p.db.AddFieldInDB(userID, rssKey, url)
 	core.NotifiedErr(err, userID)
-	core.NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
+	// core.NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
 	go p.ScanRSS(url, userID, ItemParseLink, true)
