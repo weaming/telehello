@@ -1,9 +1,8 @@
 <!--
-Description: entry content escaped HTML
-Expect:      not bozo and entries[0]['content'][0]['value'] == 'Example <b>Atom</b>'
+Description: entry content - html w/ escaped markup
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <content type="html">Example &lt;b&gt;Atom&lt;/b&gt;</content>
-</entry>
+	<entry>
+		<content type="html">&lt;p&gt;Entry Content&lt;/p&gt;</content>
+	</entry>
 </feed>

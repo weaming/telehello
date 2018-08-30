@@ -1,9 +1,8 @@
 <!--
-Description: entry rights inline XHTML with escaped markup
-Expect:      not bozo and entries[0]['rights'] == 'History of the &lt;blink&gt; tag'
+Description: entry rights - xhtml w/ escaped markup
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <rights type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">History of the &lt;blink&gt; tag</div></rights>
-</entry>
+	<entry>
+	    <rights type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">&lt;p&gt;Entry Rights&lt;/p&gt;</div></rights>
+    </entry>
 </feed>

@@ -1,9 +1,10 @@
 <!--
-Description: entry content content value
-Expect:      not bozo and entries[0]['content'][0]['value'] == 'Example Atom'
+Description: entry content
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <content>Example Atom</content>
-</entry>
+	<entry>
+		<content>
+			Entry Content
+		</content>
+	</entry>
 </feed>

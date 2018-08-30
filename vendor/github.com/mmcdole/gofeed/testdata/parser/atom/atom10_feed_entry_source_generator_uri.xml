@@ -1,11 +1,10 @@
 <!--
-Description: entry source generator uri
-Expect:      not bozo and entries[0]['source']['generator_detail']['href'] == 'http://example.com/'
+Description: entry source generator - uri
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <generator uri="http://example.com/">Example generator</generator>
-</source>
-</entry>
+  <entry>
+    <source>
+    	<generator uri="http://example.org">Source Generator</generator>
+    </source>
+  </entry>
 </feed>

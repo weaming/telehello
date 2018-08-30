@@ -1,11 +1,10 @@
 <!--
-Description: entry source generator version
-Expect:      not bozo and entries[0]['source']['generator_detail']['version'] == '2.65'
+Description: entry source generator - version
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <generator version="2.65">Example generator</generator>
-</source>
-</entry>
+  <entry>
+    <source>
+    	<generator version="2.56">Source Generator</generator>
+    </source>
+  </entry>
 </feed>

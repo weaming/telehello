@@ -1,7 +1,6 @@
 <!--
 Description: feed generator version
-Expect:      not bozo and feed['generator_detail']['version'] == '2.65'
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <generator version="2.65"></generator>
+	<generator version="2.56"></generator>
 </feed>

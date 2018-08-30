@@ -1,12 +1,12 @@
 <!--
-Description: channel skipHours
+Description: rss channel skipHours 
 -->
 <rss version="2.0">
-<channel>
-<skipHours>
-<hour>6</hour>
-<hour>7</hour>
-<hour>8</hour>
-</skipHours>
-</channel>
+  <channel>
+    <skipHours>
+      <hour>4</hour>
+      <hour>5</hour>
+      <hour>6</hour>
+    </skipHours>
+  </channel>
 </rss>

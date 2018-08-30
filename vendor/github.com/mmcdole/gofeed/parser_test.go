@@ -22,10 +22,10 @@ func TestParser_Parse(t *testing.T) {
 		feedTitle string
 		hasError  bool
 	}{
-		{"atom03_feed.xml", "atom", "Atom Title", false},
-		{"atom10_feed.xml", "atom", "Atom Title", false},
-		{"rss_feed.xml", "rss", "RSS Title", false},
-		{"rdf_feed.xml", "rss", "RDF Title", false},
+		{"atom03_feed.xml", "atom", "Feed Title", false},
+		{"atom10_feed.xml", "atom", "Feed Title", false},
+		{"rss_feed.xml", "rss", "Feed Title", false},
+		{"rdf_feed.xml", "rss", "Feed Title", false},
 		{"unknown_feed.xml", "", "", true},
 		{"empty_feed.xml", "", "", true},
 	}
@@ -60,10 +60,10 @@ func TestParser_ParseString(t *testing.T) {
 		feedTitle string
 		hasError  bool
 	}{
-		{"atom03_feed.xml", "atom", "Atom Title", false},
-		{"atom10_feed.xml", "atom", "Atom Title", false},
-		{"rss_feed.xml", "rss", "RSS Title", false},
-		{"rdf_feed.xml", "rss", "RDF Title", false},
+		{"atom03_feed.xml", "atom", "Feed Title", false},
+		{"atom10_feed.xml", "atom", "Feed Title", false},
+		{"rss_feed.xml", "rss", "Feed Title", false},
+		{"rdf_feed.xml", "rss", "Feed Title", false},
 		{"unknown_feed.xml", "", "", true},
 		{"empty_feed.xml", "", "", true},
 	}
@@ -98,10 +98,10 @@ func TestParser_ParseURL_Success(t *testing.T) {
 		feedTitle string
 		hasError  bool
 	}{
-		{"atom03_feed.xml", "atom", "Atom Title", false},
-		{"atom10_feed.xml", "atom", "Atom Title", false},
-		{"rss_feed.xml", "rss", "RSS Title", false},
-		{"rdf_feed.xml", "rss", "RDF Title", false},
+		{"atom03_feed.xml", "atom", "Feed Title", false},
+		{"atom10_feed.xml", "atom", "Feed Title", false},
+		{"rss_feed.xml", "rss", "Feed Title", false},
+		{"rdf_feed.xml", "rss", "Feed Title", false},
 		{"unknown_feed.xml", "", "", true},
 	}
 
@@ -137,6 +137,7 @@ func TestParser_ParseURL_Failure(t *testing.T) {
 	feed, err := fp.ParseURL(server.URL)
 
 	assert.NotNil(t, err)
+	assert.IsType(t, gofeed.HTTPError{}, err)
 	assert.Nil(t, feed)
 }
 

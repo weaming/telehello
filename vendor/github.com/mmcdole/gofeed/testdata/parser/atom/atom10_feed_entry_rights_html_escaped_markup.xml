@@ -1,9 +1,8 @@
 <!--
-Description: entry rights escaped HTML
-Expect:      not bozo and entries[0]['rights'] == 'Example <b>Atom</b>'
+Description: entry rights - html w/ escaped markup
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <rights type="html">Example &lt;b&gt;Atom&lt;/b&gt;</rights>
-</entry>
+	<entry>
+		<rights type="html">&lt;p&gt;Entry Rights&lt;/p&gt;</rights>
+	</entry>
 </feed>

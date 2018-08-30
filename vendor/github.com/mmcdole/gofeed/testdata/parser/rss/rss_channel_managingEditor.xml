@@ -1,8 +1,8 @@
 <!--
-Description: channel managingEditor
+Description: rss managingEditor 
 -->
 <rss version="2.0">
-<channel>
-<managingEditor>Example editor</managingEditor>
-</channel>
+  <channel>
+    <managingEditor>Feed Editor</managingEditor>
+  </channel>
 </rss>

@@ -3,8 +3,8 @@
         {
             "source": {
                 "generator": {
-                    "value": "Example generator",
-                    "version": "2.65"
+                    "value": "Source Generator",
+                    "version": "2.56"
                 }
             }
         }

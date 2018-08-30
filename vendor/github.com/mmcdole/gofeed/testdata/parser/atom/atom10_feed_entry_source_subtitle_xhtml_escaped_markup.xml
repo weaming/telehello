@@ -1,11 +1,10 @@
 <!--
-Description: entry source subtitle inline XHTML with escaped markup
-Expect:      not bozo and entries[0]['source']['subtitle'] == 'History of the &lt;blink&gt; tag'
+Description: entry source subtitle - xhtml w/ escaped markup
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <subtitle type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">History of the &lt;blink&gt; tag</div></subtitle>
-</source>
-</entry>
+  <entry>
+    <source>
+      <subtitle type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml">&lt;p&gt;Source Subtitle&lt;/p&gt;</div></subtitle>
+    </source>
+  </entry>
 </feed>

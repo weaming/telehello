@@ -1,9 +1,8 @@
 <!--
-Description: entry link type
-Expect:      not bozo and entries[0]['links'][0]['type'] == 'text/html'
+Description: entry link - type
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <link type="text/html" />
-</entry>
+	<entry>
+		<link type="text/html"></link>
+	</entry>
 </feed>

@@ -3,7 +3,7 @@
         {
             "links": [
                 {
-                    "href": "http://www.example.com/",
+                    "href": "http://example.org",
                     "rel": "alternate",
                     "type": "text/html"
                 }

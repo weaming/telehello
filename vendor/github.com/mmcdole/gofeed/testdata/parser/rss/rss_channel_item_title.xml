@@ -1,10 +1,10 @@
 <!--
-Description: item title
+Description: rss item title 
 -->
 <rss version="2.0">
-<channel>
-<item>
-<title>Item 1 title</title>
-</item>
-</channel>
+  <channel>
+    <item>
+      <title>Item Title</title>
+    </item>
+  </channel>
 </rss>

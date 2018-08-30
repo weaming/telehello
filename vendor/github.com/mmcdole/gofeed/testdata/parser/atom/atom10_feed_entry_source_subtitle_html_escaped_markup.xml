@@ -1,11 +1,10 @@
 <!--
-Description: entry source subtitle escaped HTML
-Expect:      not bozo and entries[0]['source']['subtitle'] == 'Example <b>Atom</b>'
+Description: entry source subtitle - html w/ escaped markup
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <subtitle type="html">Example &lt;b&gt;Atom&lt;/b&gt;</subtitle>
-</source>
-</entry>
+  <entry>
+    <source>
+      <subtitle type="html">&lt;p&gt;Source Subtitle&lt;/p&gt;</subtitle>
+    </source>
+  </entry>
 </feed>

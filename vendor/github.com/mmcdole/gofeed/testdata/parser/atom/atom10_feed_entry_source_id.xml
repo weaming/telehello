@@ -1,11 +1,10 @@
 <!--
-Description: entry source id
-Expect:      not bozo and entries[0]['source']['id'] == 'http://example.com/'
+Description: 
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <id>http://example.com/</id>
-</source>
-</entry>
+  <entry>
+    <source>
+    	<id>http://example.org</id>
+    </source>
+  </entry>
 </feed>

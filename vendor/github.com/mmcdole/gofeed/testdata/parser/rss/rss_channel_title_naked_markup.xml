@@ -1,8 +1,8 @@
 <!--
-Description: channel title - naked markup
+Description: rss channel title - naked markup
 -->
 <rss version="2.0">
-<channel>
-<title><p>Example feed</p></title>
-</channel>
+  <channel>
+    <title><p>Feed Title</p></title>
+  </channel>
 </rss>

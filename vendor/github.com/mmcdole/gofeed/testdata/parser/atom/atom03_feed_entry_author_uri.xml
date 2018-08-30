@@ -1,11 +1,10 @@
 <!--
-Description: entry author uri
-Expect:      not bozo and entries[0]['author_detail']['url'] == 'http://example.com/'
+Description: feed entry author uri
 -->
 <feed version="0.3" xmlns="http://purl.org/atom/ns#">
-<entry>
-  <author>
-    <uri>http://example.com/</uri>
-  </author>
-</entry>
+  <entry>
+    <author>
+      <uri>http://example.org</uri>
+    </author>
+  </entry>
 </feed>

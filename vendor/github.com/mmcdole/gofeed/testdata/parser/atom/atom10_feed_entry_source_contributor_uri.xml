@@ -1,13 +1,12 @@
 <!--
-Description: entry source contributor uri
-Expect:      not bozo and entries[0]['source']['contributors'][0]['url'] == 'http://example.com/'
+Description: entry source contributor - uri
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <contributor>
-    <uri>http://example.com/</uri>
-  </contributor>
-</source>
-</entry>
+  <entry>
+    <source>
+      <contributor>
+        <uri>http://example.org</uri>
+      </contributor>
+    </source>
+  </entry>
 </feed>

@@ -1,9 +1,8 @@
 <!--
-Description: entry link title
-Expect:      not bozo and entries[0]['links'][0]['title'] == 'Example title'
+Description: entry link - title
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <link title="Example title" />
-</entry>
+	<entry>
+		<link title="Link Title"></link>
+	</entry>
 </feed>

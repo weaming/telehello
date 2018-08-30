@@ -1,9 +1,8 @@
 <!--
-Description: entry link rel defaults to 'alternate'
-Expect:      not bozo and entries[0]['links'][0]['rel'] == 'alternate'
+Description: entry link - no rel
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <link type="text/html" href="http://www.example.com/"/>
-</entry>
+	<entry>
+		<link href="http://example.org" type="text/html"></link>
+	</entry>
 </feed>

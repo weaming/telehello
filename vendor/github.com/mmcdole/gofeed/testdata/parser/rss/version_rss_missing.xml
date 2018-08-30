@@ -1,8 +1,3 @@
-<!--
-Description: missing RSS version number
--->
+<?xml version="1.0"?>
 <rss>
-<channel>
-<description>Example description</description>
-</channel>
 </rss>

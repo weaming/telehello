@@ -1,7 +1,6 @@
 <!--
 Description: feed id
-Expect:      not bozo and feed['id'] == 'http://example.com/'
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>http://example.com/</id>
+	<id>http://example.org</id>
 </feed>

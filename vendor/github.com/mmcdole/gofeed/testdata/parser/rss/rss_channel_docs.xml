@@ -1,8 +1,8 @@
 <!--
-Description: channel docs
+Description: rss channel docs
 -->
 <rss version="2.0">
-<channel>
-<docs>http://www.example.com/</docs>
-</channel>
+  <channel>
+    <docs>http://www.example.org</docs>
+  </channel>
 </rss>

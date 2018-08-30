@@ -1,9 +1,8 @@
 <!--
-Description: entry link hreflang
-Expect:      not bozo and entries[0]['links'][0]['hreflang'] == 'en'
+Description: entry link - hreflang
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-  <link hreflang="en"/>
-</entry>
+	<entry>
+		<link hreflang="en"></link>
+	</entry>
 </feed>

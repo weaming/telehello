@@ -1,18 +1,17 @@
 <!--
-Description: multiple entry contributors
-Expect:      not bozo and entries[0]['contributors'][0] == {'name': 'Contributor 1', 'email': 'me@example.com', 'href': 'http://example.com/'} and entries[0]['contributors'][1] == {'name': 'Contributor 2', 'email': 'you@example.com', 'href': 'http://two.example.com/'}
+Description: feed entry contributor - multiple
 -->
 <feed version="0.3" xmlns="http://purl.org/atom/ns#">
-<entry>
-  <contributor>
-    <name>Contributor 1</name>
-    <email>me@example.com</email>
-    <url>http://example.com/</url>
-  </contributor>
-  <contributor>
-    <name>Contributor 2</name>
-    <email>you@example.com</email>
-    <url>http://two.example.com/</url>
-  </contributor>
-</entry>
+  <entry>
+    <contributor>
+      <name>Contributor Name 1</name>
+      <email>email@example.org</email>
+      <uri>http://example.org/1</uri>
+    </contributor>
+    <contributor>
+      <name>Contributor Name 2</name>
+      <email>email2@example.org</email>
+      <uri>http://example.org/2</uri>
+    </contributor>
+  </entry>
 </feed>

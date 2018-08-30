@@ -1,8 +1,8 @@
 <!--
-Description: channel copyright - Escaped Markup
+Description: rss channel copyright - Escaped Markup
 -->
 <rss version="2.0">
-<channel>
-<copyright>&lt;p&gt;Example copyright&lt;/p&gt;</copyright>
-</channel>
+  <channel>
+    <copyright>&lt;p&gt;Feed Copyright&lt;/p&gt;</copyright>
+  </channel>
 </rss>

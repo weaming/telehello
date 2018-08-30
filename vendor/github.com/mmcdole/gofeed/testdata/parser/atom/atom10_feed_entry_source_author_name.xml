@@ -1,13 +1,12 @@
 <!--
-Description: entry source author name
-Expect:      not bozo and entries[0]['source']['author_detail']['name'] == 'Example author'
+Description: entry source author - name
 -->
 <feed xmlns="http://www.w3.org/2005/Atom">
-<entry>
-<source>
-  <author>
-    <name>Example author</name>
-  </author>
-</source>
-</entry>
+  <entry>
+    <source>
+      <author>
+        <name>Author Name</name>
+      </author>
+    </source>
+  </entry>
 </feed>
