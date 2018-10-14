@@ -33,6 +33,48 @@ func (p *Notification) Destination() string {
 	return p.CharID
 }
 
+func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
+	var data map[string]interface{}
+	if admin, ok := ChatsMap[AdminKey]; ok {
+		NotifyHTML(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
+			strings.Split(req.RemoteAddr, ":")[0]), admin.ID)
+		data = map[string]interface{}{
+			"ok": true,
+		}
+	} else {
+		data = map[string]interface{}{
+			"ok": false,
+		}
+	}
+	return data
+}
+
+func NewMessageHandler(w http.ResponseWriter, req *http.Request) {
+	// json type
+	w.Header().Set("Content-Type", "application/json")
+
+	// check method
+	var data map[string]interface{}
+	if req.Method == POST {
+		// success
+		defer req.Body.Close()
+		body, _ := ioutil.ReadAll(req.Body)
+
+		// push into TelegramNotificationBox
+		data = pushMsgQueue(req, body)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		data = map[string]interface{}{
+			"ok":  false,
+			"msg": "method not allowed",
+		}
+	}
+
+	jData, err := json.Marshal(data)
+	PrintErr(err)
+	w.Write(jData)
+}
+
 func RunInboxService(listen string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -49,41 +91,8 @@ func RunInboxService(listen string) {
 		w.Write(js)
 	})
 
-	http.HandleFunc("/api/new", func(w http.ResponseWriter, req *http.Request) {
-		// json type
-		w.Header().Set("Content-Type", "application/json")
-
-		// check method
-		var data map[string]interface{}
-		if req.Method == POST {
-			// success
-			defer req.Body.Close()
-			body, _ := ioutil.ReadAll(req.Body)
-
-			// push into TelegramNotificationBox
-			if admin, ok := ChatsMap[AdminKey]; ok {
-				NotifyHTML(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
-					strings.Split(req.RemoteAddr, ":")[0]), admin.ID)
-				data = map[string]interface{}{
-					"ok": true,
-				}
-			} else {
-				data = map[string]interface{}{
-					"ok": false,
-				}
-			}
-		} else {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			data = map[string]interface{}{
-				"ok":  false,
-				"msg": "method not allowed",
-			}
-		}
-
-		jData, err := json.Marshal(data)
-		PrintErr(err)
-		w.Write(jData)
-	})
+	http.HandleFunc("/api/new", NewMessageHandler)
+	http.HandleFunc("/api/new/telegram", NewMessageHandler)
 
 	err := http.ListenAndServe(listen, nil)
 	FatalErr(err)
