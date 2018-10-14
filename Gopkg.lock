@@ -32,6 +32,12 @@
   version = "v1.3.1"
 
 [[projects]]
+  name = "github.com/mailgun/mailgun-go"
+  packages = ["."]
+  revision = "28c45085c063854b83107df6cf37ad8f88462105"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/mitchellh/hashstructure"
   packages = ["."]
   revision = "a38c50148365edc8df43c1580c48fb2b3a1e9cd7"
@@ -128,6 +134,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b758fb2d56179357668e094283862f6515c365c40491fb4582a177ad28550937"
+  inputs-digest = "6508f755e80ceff8a51450628c74458963299d66418d16fb42e50d118f291f3b"
   solver-name = "gps-cdcl"
   solver-version = 1
