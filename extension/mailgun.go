@@ -68,14 +68,15 @@ func sendMail(req *http.Request, body []byte) map[string]interface{} {
 
 	var MG_DOMAIN = os.Getenv("MG_DOMAIN")
 	var MG_API_KEY = os.Getenv("MG_API_KEY")
-	if MG_DOMAIN == "" || MG_API_KEY == "" {
+	var MG_PUBLIC_API_KEY = os.Getenv("MG_PUBLIC_API_KEY")
+	if MG_DOMAIN == "" || MG_API_KEY == "" || MG_PUBLIC_API_KEY == "" {
 		data = map[string]interface{}{
 			"ok":     false,
-			"reason": "setup your MG_DOMAIN and MG_API_KEY",
+			"reason": "setup your MG_DOMAIN, MG_API_KEY and MG_PUBLIC_API_KEY",
 		}
 		return data
 	}
-	var mg = mailgun.NewMailgun(MG_DOMAIN, MG_API_KEY)
+	var mg = mailgun.NewMailgun(MG_DOMAIN, MG_API_KEY, MG_PUBLIC_API_KEY)
 
 	response, id, err := SendMail(mg, sender, subject, bodyStr, recipient)
 	if err != nil {
