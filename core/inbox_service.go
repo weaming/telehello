@@ -43,7 +43,8 @@ func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
 		}
 	} else {
 		data = map[string]interface{}{
-			"ok": false,
+			"ok":  false,
+			"msg": "amdin id is not in chats map, send a message to bot to add it",
 		}
 	}
 	return data
