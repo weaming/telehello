@@ -142,7 +142,7 @@ func (f *Parser) httpClient() *http.Client {
 		return f.Client
 	}
 	f.Client = &http.Client{
-		Timeout: time.Duration(10) * time.Second,
+		Timeout: time.Duration(30) * time.Second,
 	}
 	return f.Client
 }
