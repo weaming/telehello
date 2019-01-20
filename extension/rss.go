@@ -4,12 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
 	"github.com/weaming/telehello/core"
 )
+
+var DEBUG = os.Getenv("DEBUG")
 
 const (
 	dbname     = "telebot.db"
@@ -49,7 +52,7 @@ func NewRSSPool(interval time.Duration, resetdb bool) *RSSPool {
 func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFunc) (string, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURL(url)
-	//fmt.Printf("%#v", feed)
+	// fmt.Printf("%#v", feed)
 
 	if !core.NotifiedErr(err, chatID) {
 		var itemTextArr []string
@@ -63,9 +66,28 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 		core.PrintErr(err)
 
 		rssUpdateKey := url + updatedKey
+
+		// is updated?
 		updateTime, err := p.db.Get(chatID, rssUpdateKey)
 		core.FatalErr(err)
-		sent := feed.Updated == string(updateTime)
+		updateStr := feed.Updated
+		// fix update date if update info is now show up in global level
+		if updateStr == "" {
+			updateStr = feed.Items[0].Updated
+		}
+		if updateStr == "" {
+			updateStr = feed.Items[0].Published
+		}
+		if updateStr == "" {
+			updateStr = feed.Items[0].Title
+		}
+		if updateStr == "" {
+			errStr := "updateStr as value to detemine whether the RSS have been updated is blank, you need fix the bug"
+			return errStr, errors.New(errStr)
+		}
+		sent := updateStr == string(updateTime)
+
+		// update updated time in db
 		defer func() {
 			err = p.db.Set(chatID, rssUpdateKey, feed.Updated)
 			core.FatalErr(err)
@@ -79,7 +101,10 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 
 		// join them
 		content := strings.Join(itemTextArr, "\n\n")
-		//fmt.Println(content)
+		if DEBUG != "" {
+			fmt.Println(feed.Updated)
+			fmt.Println(content)
+		}
 
 		if sent {
 			msg := fmt.Sprintf("crawled %v, %v\n", url, but)

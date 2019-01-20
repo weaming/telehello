@@ -33,10 +33,10 @@ func init() {
 	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\n")
 	// parse args
 	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
-	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook to receive message")
-	flag.Int64Var(&period, "t", 30, "telegram bot long poll timeout in seconds")
+	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook api to receive message")
+	flag.Int64Var(&period, "t", 30, "timeout in seconds of telegram bot long poll")
 	flag.BoolVar(&resetdb, "x", false, "delete bot status KV database before start")
-	flag.IntVar(&scanMinutes, "rss", 60*24, "period of crawling wanqu.co RSS in minutes")
+	flag.IntVar(&scanMinutes, "rss", 60*24, "period time of crawling wanqu.co RSS in minutes")
 	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
 
@@ -44,9 +44,11 @@ func init() {
 
 	// turing robot
 	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
+
 	// RSS
 	rss = extension.NewRSSPool(interval, resetdb)
 	rss.Start()
+
 	// douban host movie
 	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
 }
