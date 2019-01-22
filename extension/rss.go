@@ -125,6 +125,18 @@ func ItemParseLink(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v\n%v", i+1, strings.TrimSpace(item.Title), strings.TrimSpace(item.Link))
 }
 
+func ItemParseLinkAndCategories(i int, item *gofeed.Item) string {
+	catStr := ""
+	if len(item.Categories) > 0 {
+		catStr = strings.Join(item.Categories, ", ")
+	}
+	if catStr != "" {
+		catStr += "\n"
+	}
+
+	return fmt.Sprintf("%d %v\n%v%v", i+1, strings.TrimSpace(item.Title), catStr, strings.TrimSpace(item.Link))
+}
+
 func ItemParseDesc(i int, item *gofeed.Item) string {
 	return fmt.Sprintf("%d %v:\n%v", i+1, item.Title, item.Description)
 }
@@ -203,7 +215,7 @@ func (p *RSSPool) AddRSS(userID, url string) error {
 	// core.NotifyText(fmt.Sprintf("Current RSS list:\n%v", strings.Join(urls, "\n")), userID)
 
 	// should send new notification to app
-	go p.ScanRSS(url, userID, ItemParseLink, true)
+	go p.ScanRSS(url, userID, ItemParseLinkAndCategories, true)
 	return nil
 }
 
@@ -225,7 +237,7 @@ func (p *RSSPool) CrawlForUser(userID string, daemon bool) {
 	urls, err := p.GetOldURLs(userID)
 	if !core.NotifiedErr(err, userID) {
 		for _, url := range urls {
-			go p.ScanRSS(url, userID, ItemParseLink, daemon)
+			go p.ScanRSS(url, userID, ItemParseLinkAndCategories, daemon)
 		}
 	}
 }
