@@ -72,11 +72,13 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 		core.FatalErr(err)
 		updateStr := feed.Updated
 		// fix update date if update info is now show up in global level
-		if updateStr == "" {
-			updateStr = feed.Items[0].Updated
-		}
-		if updateStr == "" {
-			updateStr = feed.Items[0].Published
+		if os.Getenv("SIMPLE") == "" {
+			if updateStr == "" {
+				updateStr = feed.Items[0].Updated
+			}
+			if updateStr == "" {
+				updateStr = feed.Items[0].Published
+			}
 		}
 		if updateStr == "" {
 			updateStr = feed.Items[0].Title
