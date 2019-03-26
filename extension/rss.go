@@ -68,7 +68,7 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 		rssUpdateKey := url + updatedKey
 
 		// is updated?
-		updateTime, err := p.db.Get(chatID, rssUpdateKey)
+		updateStrPrev, err := p.db.Get(chatID, rssUpdateKey)
 		core.FatalErr(err)
 		updateStr := feed.Updated
 		// fix update date if update info is now show up in global level
@@ -89,11 +89,11 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 			errStr := "updateStr as value to detemine whether the RSS have been updated is blank, you need fix the bug"
 			return errStr, errors.New(errStr)
 		}
-		sent := updateStr == string(updateTime)
+		sent := updateStr == string(updateStrPrev)
 
 		// update updated time in db
 		defer func() {
-			err = p.db.Set(chatID, rssUpdateKey, feed.Updated)
+			err = p.db.Set(chatID, rssUpdateKey, updateStr)
 			core.FatalErr(err)
 		}()
 
