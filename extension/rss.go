@@ -83,6 +83,8 @@ func (p *RSSPool) parseFeed(url, chatID string, html bool, itemFunc ItemParseFun
 		if updateStr == "" {
 			updateStr = feed.Items[0].Title
 		}
+		log.Printf("updateStr: %v\n", updateStr)
+
 		if updateStr == "" {
 			errStr := "updateStr as value to detemine whether the RSS have been updated is blank, you need fix the bug"
 			return errStr, errors.New(errStr)
