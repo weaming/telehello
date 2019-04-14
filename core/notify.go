@@ -43,6 +43,9 @@ func notifyText(bot *telebot.Bot, content string, recipient ChatUser) (err error
 func notifyHTML(bot *telebot.Bot, content string, recipient ChatUser) (err error) {
 	return bot.SendMessage(recipient, content, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
 }
+func notifyPhoto(bot *telebot.Bot, photo *telebot.Photo, recipient ChatUser) (err error) {
+	return bot.SendPhoto(recipient, photo, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
+}
 
 var notifyFuncMap = map[string]Notifier{
 	"default": notifyText,
@@ -51,6 +54,8 @@ var notifyFuncMap = map[string]Notifier{
 
 type InboxMessage interface {
 	Message() string
+	Photo() *telebot.Photo
+	PhotoClean()
 	Type() string
 	Destination() string
 }
@@ -59,22 +64,32 @@ func PollInbox(bot *telebot.Bot, inbox chan InboxMessage) {
 	var err error
 	for msg := range inbox {
 		charID := msg.Destination()
-		if fn, exist := notifyFuncMap[msg.Type()]; exist {
-			err = fn(bot, msg.Message(), ChatUser{ID: charID})
+		if msg.Type() == "PHOTO" {
+			photo := msg.Photo()
+			if photo != nil {
+				err = notifyPhoto(bot, photo, ChatUser{ID: charID})
+			}
+			defer msg.PhotoClean()
 		} else {
-			fn := notifyFuncMap["default"]
-			err = fn(bot, msg.Message(), ChatUser{ID: charID})
+			if fn, exist := notifyFuncMap[msg.Type()]; exist {
+				err = fn(bot, msg.Message(), ChatUser{ID: charID})
+			} else {
+				fn := notifyFuncMap["default"]
+				err = fn(bot, msg.Message(), ChatUser{ID: charID})
+			}
 		}
 		PrintErr(err)
 	}
 }
 
 func NotifyText(text, chatID string) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), ""}
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "", []byte{}, ""}
 }
-
 func NotifyHTML(text, chatID string) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML"}
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML", []byte{}, ""}
+}
+func NotifyPhoto(text, chatID string, bin []byte) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PHOTO", bin, ""}
 }
 
 func NotifiedLog(err error, chatID, level string) bool {

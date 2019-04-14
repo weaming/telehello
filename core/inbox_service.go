@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/tucnak/telebot"
 )
 
 const (
@@ -19,10 +23,60 @@ type Notification struct {
 	CharID      string
 	ReceiveTime time.Time
 	ContentType string
+	PhotoBin    []byte
+	photoPath   string
 }
 
 func (p *Notification) Message() string {
 	return fmt.Sprintf("%v\n\n%v", prettyTime(p.ReceiveTime), p.Content)
+}
+
+func TempFile(content []byte) (tfname string, err error) {
+	tmpfile, err := ioutil.TempFile("", "telehello.*.png")
+	tfname = tmpfile.Name()
+	if err != nil {
+		return
+	}
+	if _, err = tmpfile.Write(content); err != nil {
+		tmpfile.Close()
+		return
+	}
+	if err = tmpfile.Close(); err != nil {
+		return
+	}
+	return
+}
+
+func (p *Notification) Photo() *telebot.Photo {
+	if len(p.PhotoBin) == 0 {
+		return nil
+	}
+	tempfile, err := TempFile(p.PhotoBin)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	file, err := telebot.NewFile(tempfile)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return &telebot.Photo{File: file}
+}
+
+func (p *Notification) PhotoClean() {
+	exist, err := ExistFile(p.photoPath)
+	if err != nil {
+		log.Println(err)
+	}
+	if exist {
+		defer func() {
+			if r := recover(); r == nil {
+				log.Println(r)
+			}
+		}()
+		os.Remove(p.photoPath)
+	}
 }
 
 func (p *Notification) Type() string {
@@ -38,6 +92,22 @@ func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
 	if admin, ok := ChatsMap[AdminKey]; ok {
 		NotifyHTML(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
 			strings.Split(req.RemoteAddr, ":")[0]), admin.ID)
+		data = map[string]interface{}{
+			"ok": true,
+		}
+	} else {
+		data = map[string]interface{}{
+			"ok":  false,
+			"msg": "amdin id is not in chats map, send a message to bot to add it",
+		}
+	}
+	return data
+}
+
+func pushImageQueue(req *http.Request, body []byte) map[string]interface{} {
+	var data map[string]interface{}
+	if admin, ok := ChatsMap[AdminKey]; ok {
+		NotifyPhoto(fmt.Sprintf("%s\nMessage IP: %s\n", "New Image", strings.Split(req.RemoteAddr, ":")[0]), admin.ID, body)
 		data = map[string]interface{}{
 			"ok": true,
 		}
@@ -76,10 +146,36 @@ func NewMessageHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(jData)
 }
 
+func NewImageHandler(w http.ResponseWriter, req *http.Request) {
+	// json type
+	w.Header().Set("Content-Type", "application/json")
+
+	// check method
+	var data map[string]interface{}
+	if req.Method == POST {
+		// success
+		defer req.Body.Close()
+		body, _ := ioutil.ReadAll(req.Body)
+
+		// push into TelegramNotificationBox
+		data = pushImageQueue(req, body)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		data = map[string]interface{}{
+			"ok":  false,
+			"msg": "method not allowed",
+		}
+	}
+
+	jData, err := json.Marshal(data)
+	PrintErr(err)
+	w.Write(jData)
+}
+
 func RunInboxService(listen string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(`POST content to <a href="/api/new">/api/new</a> to send notification to me.`))
+		w.Write([]byte(`POST text to <a href="/api/new">/api/new</a> to send me a notification.`))
 	})
 
 	http.HandleFunc("/status/users", func(w http.ResponseWriter, req *http.Request) {
@@ -94,6 +190,7 @@ func RunInboxService(listen string) {
 
 	http.HandleFunc("/api/new", NewMessageHandler)
 	http.HandleFunc("/api/new/telegram", NewMessageHandler)
+	http.HandleFunc("/api/new/image", NewImageHandler)
 
 	err := http.ListenAndServe(listen, nil)
 	FatalErr(err)
