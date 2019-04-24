@@ -153,9 +153,16 @@ func PostJson(api string, data map[string]interface{}) (map[string]interface{}, 
 func SendToSlackBot(req *http.Request, body []byte) map[string]interface{} {
 	var data map[string]interface{}
 	msg := fmt.Sprintf("%s\nMessage IP: %s\n", string(body), strings.Split(req.RemoteAddr, ":")[0])
-	sendSlack(msg)
-	data = map[string]interface{}{
-		"ok": true,
+	err := sendSlack(msg)
+	if err != nil {
+		data = map[string]interface{}{
+			"ok": true,
+		}
+	} else {
+		data = map[string]interface{}{
+			"ok":  false,
+			"msg": err.Error(),
+		}
 	}
 	return data
 }
