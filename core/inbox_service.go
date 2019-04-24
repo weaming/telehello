@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -120,6 +122,44 @@ func pushImageQueue(req *http.Request, body []byte) map[string]interface{} {
 	return data
 }
 
+func sendSlack(msg string) error {
+	data := map[string]interface{}{
+		"text": msg,
+	}
+	hook := os.Getenv("SLACK_HOOK")
+	if hook != "" {
+		_, err := PostJson(hook, data)
+		return err
+	}
+	return errors.New("missing env SLACK_HOOK, e.g. https://hooks.slack.com/services/xxx/xxx/xxxx")
+}
+
+func PostJson(api string, data map[string]interface{}) (map[string]interface{}, error) {
+	bytesRepresentation, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post(api, "application/json", bytes.NewBuffer(bytesRepresentation))
+	if err != nil {
+		return nil, err
+	}
+
+	var result map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&result)
+	return result, nil
+}
+
+func SendToSlackBot(req *http.Request, body []byte) map[string]interface{} {
+	var data map[string]interface{}
+	msg := fmt.Sprintf("%s\nMessage IP: %s\n", string(body), strings.Split(req.RemoteAddr, ":")[0])
+	sendSlack(msg)
+	data = map[string]interface{}{
+		"ok": true,
+	}
+	return data
+}
+
 func NewMessageHandler(w http.ResponseWriter, req *http.Request) {
 	// json type
 	w.Header().Set("Content-Type", "application/json")
@@ -172,6 +212,32 @@ func NewImageHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(jData)
 }
 
+func SlackBotHandler(w http.ResponseWriter, req *http.Request) {
+	// json type
+	w.Header().Set("Content-Type", "application/json")
+
+	// check method
+	var data map[string]interface{}
+	if req.Method == POST {
+		// success
+		defer req.Body.Close()
+		body, _ := ioutil.ReadAll(req.Body)
+
+		// push into TelegramNotificationBox
+		data = SendToSlackBot(req, body)
+	} else {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		data = map[string]interface{}{
+			"ok":  false,
+			"msg": "method not allowed",
+		}
+	}
+
+	jData, err := json.Marshal(data)
+	PrintErr(err)
+	w.Write(jData)
+}
+
 func RunInboxService(listen string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
@@ -191,6 +257,7 @@ func RunInboxService(listen string) {
 	http.HandleFunc("/api/new", NewMessageHandler)
 	http.HandleFunc("/api/new/telegram", NewMessageHandler)
 	http.HandleFunc("/api/new/image", NewImageHandler)
+	http.HandleFunc("/api/new/slack", SlackBotHandler)
 
 	err := http.ListenAndServe(listen, nil)
 	FatalErr(err)
