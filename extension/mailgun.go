@@ -48,6 +48,15 @@ func NewEmailHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(jData)
 }
 
+// 代码和 core/inbox_service.go 里的相同，避免依赖复制到这里
+func GetMessageIP(req *http.Request) string {
+	realIP := req.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+	return strings.Split(req.RemoteAddr, ":")[0]
+}
+
 func sendMail(req *http.Request, body []byte) map[string]interface{} {
 	var data map[string]interface{}
 
@@ -61,7 +70,7 @@ func sendMail(req *http.Request, body []byte) map[string]interface{} {
 	sender := "noreply@drink.cafe"
 	recipient := "garden.yuen@gmail.com"
 
-	bodyStr := fmt.Sprintf("%s\n\nMessage IP: %s\n", string(body), strings.Split(req.RemoteAddr, ":")[0])
+	bodyStr := fmt.Sprintf("%s\n\nMessage IP: %s\n", string(body), GetMessageIP(req))
 	if title != "" {
 		bodyStr = fmt.Sprintf("%v\n\n%v", title, bodyStr)
 	}

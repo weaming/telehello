@@ -135,3 +135,11 @@ func ExtendStringList(a, b []string) []string {
 
 	return a
 }
+
+func GetMessageIP(req *http.Request) string {
+	realIP := req.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+	return strings.Split(req.RemoteAddr, ":")[0]
+}

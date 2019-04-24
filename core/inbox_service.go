@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/tucnak/telebot"
@@ -92,8 +91,7 @@ func (p *Notification) Destination() string {
 func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
 	var data map[string]interface{}
 	if admin, ok := ChatsMap[AdminKey]; ok {
-		NotifyHTML(fmt.Sprintf("%s\nMessage IP: %s\n", string(body),
-			strings.Split(req.RemoteAddr, ":")[0]), admin.ID)
+		NotifyHTML(fmt.Sprintf("%s\nMessage IP: %s\n", string(body), GetMessageIP(req)), admin.ID)
 		data = map[string]interface{}{
 			"ok": true,
 		}
@@ -109,7 +107,7 @@ func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
 func pushImageQueue(req *http.Request, body []byte) map[string]interface{} {
 	var data map[string]interface{}
 	if admin, ok := ChatsMap[AdminKey]; ok {
-		NotifyPhoto(fmt.Sprintf("%s\nMessage IP: %s\n", "New Image", strings.Split(req.RemoteAddr, ":")[0]), admin.ID, body)
+		NotifyPhoto(fmt.Sprintf("%s\nMessage IP: %s\n", "New Image", GetMessageIP(req)), admin.ID, body)
 		data = map[string]interface{}{
 			"ok": true,
 		}
@@ -152,7 +150,7 @@ func PostJson(api string, data map[string]interface{}) (map[string]interface{}, 
 
 func SendToSlackBot(req *http.Request, body []byte) map[string]interface{} {
 	var data map[string]interface{}
-	msg := fmt.Sprintf("%s\nMessage IP: %s\n", string(body), strings.Split(req.RemoteAddr, ":")[0])
+	msg := fmt.Sprintf("%s\nMessage IP: %s\n", string(body), GetMessageIP(req))
 	err := sendSlack(msg)
 	if err != nil {
 		data = map[string]interface{}{
