@@ -156,12 +156,12 @@ func SendToSlackBot(req *http.Request, body []byte) map[string]interface{} {
 	err := sendSlack(msg)
 	if err != nil {
 		data = map[string]interface{}{
-			"ok": true,
+			"ok":  false,
+			"msg": err.Error(),
 		}
 	} else {
 		data = map[string]interface{}{
-			"ok":  false,
-			"msg": err.Error(),
+			"ok": true,
 		}
 	}
 	return data
