@@ -2,106 +2,143 @@
 
 
 [[projects]]
+  digest = "1:e8777c437e157121465a08c05304d5847ae70b5683ef4afeb723b3c9e5e3bc67"
   name = "github.com/AlekSi/pointer"
   packages = ["."]
+  pruneopts = ""
   revision = "08a25bac605b3fcb6cc27f3917b2c2c87451963d"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:9a88883f474d09f1da61894cd8115c7f33988d6941e4f6236324c777aaff8f2c"
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
+  pruneopts = ""
   revision = "dc2ec5c7ca4d9aae063b79b9f581dd3ea6afd2b2"
   version = "v1.4.1"
 
 [[projects]]
+  digest = "1:e3726ad6f38f710e84c8dcd0e830014de6eaeea81f28d91ae898afecc078479a"
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
+  pruneopts = ""
   revision = "901648c87902174f774fac311d7f176f8647bdaa"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:5680f8c40e48f07cb77aece3165a866aaf8276305258b3b70db8ec7ad6ddb78d"
   name = "github.com/armon/go-radix"
   packages = ["."]
+  pruneopts = ""
   revision = "1a2de0c21c94309923825da3df33a4381872c795"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:ed112122ed4a920d944cc99b9d00b0441c11685939c28462c719488d36fe29aa"
   name = "github.com/boltdb/bolt"
   packages = ["."]
+  pruneopts = ""
   revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
   version = "v1.3.1"
 
 [[projects]]
+  digest = "1:09aa5dd1332b93c96bde671bafb053249dc813febf7d5ca84e8f382ba255d67d"
+  name = "github.com/gorilla/websocket"
+  packages = ["."]
+  pruneopts = ""
+  revision = "66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d"
+  version = "v1.4.0"
+
+[[projects]]
+  digest = "1:d2eb436da33c2337493d5b9dc8d82803442c24a8f913694ff21e72ac29a02e4d"
   name = "github.com/mailgun/mailgun-go"
   packages = ["."]
+  pruneopts = ""
   revision = "28c45085c063854b83107df6cf37ad8f88462105"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:387d79bfe8a4f0f300a22d65782108a94861eecfe652ffff30e8f91857ad81bb"
   name = "github.com/mitchellh/hashstructure"
   packages = ["."]
+  pruneopts = ""
   revision = "a38c50148365edc8df43c1580c48fb2b3a1e9cd7"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:0ae05e34cbf90e309af02a3f04d2fc3373eb3bed967fd270f5a7cc221d40db0c"
   name = "github.com/mmcdole/gofeed"
   packages = [
     ".",
     "atom",
     "extensions",
     "internal/shared",
-    "rss"
+    "rss",
   ]
+  pruneopts = ""
   revision = "42010a154d249f5f753dfe03a6390b59671e403e"
   version = "v1.0.0-beta2"
 
 [[projects]]
   branch = "master"
+  digest = "1:2aeabb465eb865eda7512877c258380bddacc8222610e41041f3833379093909"
   name = "github.com/mmcdole/goxpp"
   packages = ["."]
+  pruneopts = ""
   revision = "77e4a51a73ed99ee3f33c1474dc166866304acbd"
 
 [[projects]]
   branch = "master"
+  digest = "1:96ff35f4aa886600f2fc6361e8ff79de84c1ee28642135389b4134173cd127fa"
   name = "github.com/olebedev/when"
   packages = [
     ".",
     "rules",
     "rules/common",
     "rules/en",
-    "rules/ru"
+    "rules/ru",
   ]
+  pruneopts = ""
   revision = "53693fbb59a88d8eb5a214820c5ec1ea76d2460c"
 
 [[projects]]
+  digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = ""
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:abf19ee4623a526cc8c38bdedcf55f4ec8c8dbfee15d009d43d9e68823d6650c"
   name = "github.com/tucnak/telebot"
   packages = ["."]
+  pruneopts = ""
   revision = "00cebf376d79ee4363a11cd66fbbdf565452e0ab"
   version = "v1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:7dd0f1b8c8bd70dbae4d3ed3fbfaec224e2b27bcc0fc65882d6f1dba5b1f6e22"
   name = "golang.org/x/net"
   packages = [
     "html",
     "html/atom",
-    "html/charset"
+    "html/charset",
   ]
+  pruneopts = ""
   revision = "8a410e7b638dca158bf9e766925842f6651ff828"
 
 [[projects]]
   branch = "master"
+  digest = "1:79b4fb7cfed68c4d0727858bd32dbe3be4b97ea58e2d767f92287f67810cbc98"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = ""
   revision = "d99a578cf41bfccdeaf48b0845c823a4b8b0ad5e"
 
 [[projects]]
+  digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
   name = "golang.org/x/text"
   packages = [
     "encoding",
@@ -120,20 +157,33 @@
     "language",
     "runes",
     "transform",
-    "unicode/cldr"
+    "unicode/cldr",
   ]
+  pruneopts = ""
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:00b478cb17bbc3a26de5352eee1218f732f15d336ce4b7a421a09a91ce72565f"
   name = "gopkg.in/fatih/set.v0"
   packages = ["."]
+  pruneopts = ""
   revision = "2c768e3c5489976167bfc42b5c7c92ca783f4389"
   version = "v0.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6508f755e80ceff8a51450628c74458963299d66418d16fb42e50d118f291f3b"
+  input-imports = [
+    "github.com/boltdb/bolt",
+    "github.com/gorilla/websocket",
+    "github.com/mailgun/mailgun-go",
+    "github.com/mmcdole/gofeed",
+    "github.com/olebedev/when",
+    "github.com/olebedev/when/rules/common",
+    "github.com/olebedev/when/rules/en",
+    "github.com/tucnak/telebot",
+    "gopkg.in/fatih/set.v0",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

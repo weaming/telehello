@@ -187,7 +187,7 @@ func NewMessageHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	jData, err := json.Marshal(data)
-	PrintErr(err)
+	FatalErr(err)
 	w.Write(jData)
 }
 
@@ -213,7 +213,7 @@ func NewImageHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	jData, err := json.Marshal(data)
-	PrintErr(err)
+	FatalErr(err)
 	w.Write(jData)
 }
 
@@ -239,7 +239,7 @@ func SlackBotHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	jData, err := json.Marshal(data)
-	PrintErr(err)
+	FatalErr(err)
 	w.Write(jData)
 }
 
@@ -259,9 +259,11 @@ func RunInboxService(listen string) {
 		w.Write(js)
 	})
 
+	// reserved for compatible purpose
 	http.HandleFunc("/api/new", NewMessageHandler)
 	http.HandleFunc("/api/new/telegram", NewMessageHandler)
-	http.HandleFunc("/api/new/image", NewImageHandler)
+	http.HandleFunc("/api/new/telegram/image", NewImageHandler)
+	http.HandleFunc("/api/new/telegram/websocket", WebsocketHandler)
 	http.HandleFunc("/api/new/slack", SlackBotHandler)
 
 	err := http.ListenAndServe(listen, nil)

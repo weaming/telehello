@@ -22,10 +22,11 @@ func FatalErr(err error) {
 	}
 }
 
-func PrintErr(err error) {
+func PrintErr(err error) bool {
 	if err != nil {
 		log.Println(err)
 	}
+	return err != nil
 }
 
 func LogMessage(msg telebot.Message) {
