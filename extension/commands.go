@@ -160,7 +160,7 @@ func remindHandler(body string, params *HandlerParameter) string {
 	go func() {
 		t := time.NewTimer(time.Until(result.Time))
 		<-t.C
-		core.NotifyText(body, params.UserID)
+		core.NotifyText(body, params.UserID, "extension(telegram)")
 	}()
 
 	return fmt.Sprintf("I will remind you at %v: %v\n", result.Time, result.Source)

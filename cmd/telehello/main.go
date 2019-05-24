@@ -85,7 +85,7 @@ func main() {
 
 					if root, ok2 := core.ChatsMap[core.AdminKey]; ok2 {
 						// send log to admin
-						core.NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID)
+						core.NotifyText(fmt.Sprintf("New user %v(%v)", userName, userID), root.ID, "internal")
 					}
 					if userName == adminTelegramID {
 						// crawl defaults RSSes for weaming

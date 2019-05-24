@@ -83,19 +83,19 @@ func PollInbox(bot *telebot.Bot, inbox chan InboxMessage) {
 	}
 }
 
-func NotifyText(text, chatID string) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PLAIN", []byte{}, ""}
+func NotifyText(text, chatID, channel string) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PLAIN", []byte{}, "", channel}
 }
-func NotifyHTML(text, chatID string) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML", []byte{}, ""}
+func NotifyHTML(text, chatID, channel string) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML", []byte{}, "", channel}
 }
-func NotifyPhoto(text, chatID string, bin []byte) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PHOTO", bin, ""}
+func NotifyPhoto(text, chatID, channel string, bin []byte) {
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PHOTO", bin, "", channel}
 }
 
 func NotifiedLog(err error, chatID, level string) bool {
 	if err != nil {
-		NotifyText(fmt.Sprintf("%v: %v", level, err.Error()), chatID)
+		NotifyText(fmt.Sprintf("%v: %v", level, err.Error()), chatID, "internal")
 		// if is error, return true
 		return true
 	}
@@ -108,7 +108,7 @@ func NotifiedErr(err error, chatID string) bool {
 func NotifyAdmin(text, chatID string) {
 	if admin, ok := ChatsMap[AdminKey]; ok {
 		if chatID != admin.Destination() {
-			NotifyText(text, admin.Destination())
+			NotifyText(text, admin.Destination(), "internal")
 		}
 	}
 }

@@ -26,10 +26,14 @@ type Notification struct {
 	ContentType string
 	PhotoBin    []byte
 	photoPath   string
+	Channel     string
 }
 
 func (p *Notification) Message() string {
-	return fmt.Sprintf("%v\n\n%v", p.Content, prettyTime(p.ReceiveTime))
+	if p.Channel != "" {
+		return fmt.Sprintf("%v\n%v via %v", p.Content, prettyTime(p.ReceiveTime), p.Channel)
+	}
+	return fmt.Sprintf("%v\n%v", p.Content, prettyTime(p.ReceiveTime))
 }
 
 func TempFile(content []byte) (tfname string, err error) {
@@ -88,10 +92,10 @@ func (p *Notification) Destination() string {
 	return p.CharID
 }
 
-func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
+func pushMsgQueue(req *http.Request, body []byte, channel string) map[string]interface{} {
 	var data map[string]interface{}
 	if admin, ok := ChatsMap[AdminKey]; ok {
-		NotifyHTML(fmt.Sprintf("%s\n\nMessage IP: %s", string(body), GetMessageIP(req)), admin.ID)
+		NotifyHTML(fmt.Sprintf("%s\n\nMessage IP: %s", string(body), GetMessageIP(req)), admin.ID, channel)
 		data = map[string]interface{}{
 			"ok": true,
 		}
@@ -104,10 +108,10 @@ func pushMsgQueue(req *http.Request, body []byte) map[string]interface{} {
 	return data
 }
 
-func pushImageQueue(req *http.Request, body []byte) map[string]interface{} {
+func pushImageQueue(req *http.Request, body []byte, channel string) map[string]interface{} {
 	var data map[string]interface{}
 	if admin, ok := ChatsMap[AdminKey]; ok {
-		NotifyPhoto(fmt.Sprintf("%s\n\nMessage IP: %s", "New Image", GetMessageIP(req)), admin.ID, body)
+		NotifyPhoto(fmt.Sprintf("%s\n\nMessage IP: %s", "New Image", GetMessageIP(req)), admin.ID, channel, body)
 		data = map[string]interface{}{
 			"ok": true,
 		}
@@ -177,7 +181,7 @@ func NewMessageHandler(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 
 		// push into TelegramNotificationBox
-		data = pushMsgQueue(req, body)
+		data = pushMsgQueue(req, body, "http")
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		data = map[string]interface{}{
@@ -203,7 +207,7 @@ func NewImageHandler(w http.ResponseWriter, req *http.Request) {
 		body, _ := ioutil.ReadAll(req.Body)
 
 		// push into TelegramNotificationBox
-		data = pushImageQueue(req, body)
+		data = pushImageQueue(req, body, "http")
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		data = map[string]interface{}{

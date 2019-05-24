@@ -34,7 +34,7 @@ func ProcessMessage(conn *websocket.Conn, req *http.Request) {
 		var data map[string]interface{}
 		switch messageType {
 		case websocket.TextMessage:
-			data = pushMsgQueue(req, p)
+			data = pushMsgQueue(req, p, "websocket")
 		case websocket.BinaryMessage:
 			data = map[string]interface{}{
 				"ok":  false,

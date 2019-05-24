@@ -156,7 +156,7 @@ outer:
 			}
 		} else {
 			// send rss content
-			core.NotifyText(content, chatID)
+			core.NotifyText(content, chatID, "extension(rss)")
 
 			// log to admin
 			if user, ok := core.ChatsMap[chatID]; ok {
@@ -172,7 +172,7 @@ outer:
 				select {
 				case pair := <-p.delCh:
 					if pair.ChatID == chatID && pair.URL == url {
-						defer func() { core.NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID) }()
+						defer func() { core.NotifyText(fmt.Sprintf("crawler for %v stopped", url), chatID, "extension(rss)") }()
 						break outer
 					}
 					// else put signal back

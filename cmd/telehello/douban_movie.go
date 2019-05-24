@@ -35,7 +35,7 @@ func ScanDoubanMovie(score float64, delta time.Duration) {
 			if !core.NotifiedErr(err, admin.ID) {
 				text := strings.Join(textList, "\n\n")
 				if text != last {
-					core.NotifyText(text, admin.ID)
+					core.NotifyText(text, admin.ID, "extension(douban)")
 					last = text
 				}
 			}
