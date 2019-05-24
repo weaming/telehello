@@ -11,12 +11,12 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
 func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if PrintErr(err) {
-		w.WriteHeader(http.StatusMethodNotAllowed)
 		msg := fmt.Sprintf("unknow error when upgrade protocol: %s", err)
 		w.Write([]byte(msg))
 		return
