@@ -17,13 +17,8 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if PrintErr(err) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		data := map[string]interface{}{
-			"ok":  false,
-			"msg": fmt.Sprintf("unknow error when upgrade protocol: %s", err),
-		}
-		jData, err := json.Marshal(data)
-		FatalErr(err)
-		w.Write(jData)
+		msg := fmt.Sprintf("unknow error when upgrade protocol: %s", err)
+		w.Write([]byte(msg))
 		return
 	}
 	go ProcessMessage(conn, r)
