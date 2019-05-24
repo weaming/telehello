@@ -49,6 +49,7 @@ func notifyPhoto(bot *telebot.Bot, photo *telebot.Photo, recipient ChatUser) (er
 
 var notifyFuncMap = map[string]Notifier{
 	"default": notifyText,
+	"PLAIN":   notifyText,
 	"HTML":    notifyHTML,
 }
 
@@ -83,7 +84,7 @@ func PollInbox(bot *telebot.Bot, inbox chan InboxMessage) {
 }
 
 func NotifyText(text, chatID string) {
-	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "", []byte{}, ""}
+	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "PLAIN", []byte{}, ""}
 }
 func NotifyHTML(text, chatID string) {
 	TelegramNotificationBox <- &Notification{text, chatID, time.Now(), "HTML", []byte{}, ""}
