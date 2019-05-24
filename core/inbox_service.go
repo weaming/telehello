@@ -29,7 +29,7 @@ type Notification struct {
 }
 
 func (p *Notification) Message() string {
-	return fmt.Sprintf("%v\n%v", p.Content, prettyTime(p.ReceiveTime))
+	return fmt.Sprintf("%v\n\n%v", p.Content, prettyTime(p.ReceiveTime))
 }
 
 func TempFile(content []byte) (tfname string, err error) {
