@@ -14,8 +14,6 @@ Features:
 	4. 执行服务器脚本
 
 Usage of telehello:
-  -douban float
-    	douban movie min score (default 8)
   -l string
     	[host]:port http hook to receive message (default ":1234")
   -rss int

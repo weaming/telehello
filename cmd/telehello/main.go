@@ -14,43 +14,29 @@ import (
 	"github.com/weaming/telehello/extension"
 )
 
-const (
-	TURING_KEY  = "e8151bef6a9f9deaf641a7c71b5cb0bc"
-	TURING_NAME = "小Q"
-)
-
-var turing *extension.TuringBot
 var listen string
 var period int64 = 30
 var resetdb bool
 var scanMinutes int = 60 * 24
-var doubanScore float64
 var adminTelegramID = "weaming"
 
 var rss *extension.RSSPool
 
 func init() {
-	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 图灵聊天机器人\n\n")
+	fmt.Printf("一个Telegram消息机器人\n\nFeatures:\n\t1. RSS抓取\n\t2. HTTP接口接收消息\n\t3. 通过接口发送邮件\n\n")
 	// parse args
 	flag.StringVar(&adminTelegramID, "telegramID", adminTelegramID, "your telegram ID without @")
 	flag.StringVar(&listen, "l", ":1234", "[host]:port http hook api to receive message")
 	flag.Int64Var(&period, "t", 30, "timeout in seconds of telegram bot long poll")
 	flag.BoolVar(&resetdb, "x", false, "delete bot status KV database before start")
 	flag.IntVar(&scanMinutes, "rss", 60*24, "period time of crawling wanqu.co RSS in minutes")
-	flag.Float64Var(&doubanScore, "douban", 8, "douban movie min score")
 	flag.Parse()
 
 	interval := time.Minute * time.Duration(scanMinutes)
 
-	// turing robot
-	turing = extension.NewTuringBot(TURING_KEY, TURING_NAME)
-
 	// RSS
 	rss = extension.NewRSSPool(interval, resetdb)
 	rss.Start()
-
-	// douban host movie
-	go ScanDoubanMovie(doubanScore, time.Duration(60*24))
 }
 
 func main() {
@@ -106,15 +92,9 @@ func main() {
 				}
 
 				if text[0] == '/' {
-					responseText = extension.ProcessCommand(text, userID, rss, turing)
+					responseText = extension.ProcessCommand(text, userID, rss)
 				} else {
-					if message.Text == "hi" {
-						responseText = "Hello, " + message.Sender.FirstName + "!"
-					} else if strings.HasPrefix(text, "debug") {
-						responseText = text
-					} else {
-						responseText = turing.Answer(text, userID)
-					}
+					responseText = text
 				}
 
 			photos:
